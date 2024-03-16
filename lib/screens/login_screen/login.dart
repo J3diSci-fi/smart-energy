@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
+import 'package:smartenergy_app/api/api_devices_controller.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro.dart';
 
 class LoginPage extends StatelessWidget {
@@ -51,6 +52,14 @@ class LoginPage extends StatelessWidget {
                       if (user != null) {
                         Navigator.pushNamed(context, '/profile');
                         print(user);
+                        List<dynamic> dispositivos = await getDispositivos(user);
+                        for (var dispositivo in dispositivos) {
+                          final id = dispositivo['id']['id'];
+                          final name = dispositivo['name'];
+                          final label = dispositivo['label'];
+
+                          print('ID: $id, Name: $name, Label: $label');
+                        }
                       }else {
                         ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

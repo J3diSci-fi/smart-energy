@@ -97,7 +97,6 @@ Future<dynamic> getAllCustomers() async {
 dynamic verifyLoginAndPassword(String login, String senha) async {
   dynamic jsonData = await getAllCustomers();
   final data = jsonData['data'];
-  print(data);
 
   for (var customer in data) {
     final title = customer['title'];
@@ -105,8 +104,9 @@ dynamic verifyLoginAndPassword(String login, String senha) async {
     
     // Verifica se o login e a senha correspondem
     if (title == login && password == senha) {
-      print(customer);
-      return customer; // Retorna true se corresponderem
+      //print(customer);
+      //print(customer['id']['id']);
+      return customer['id']['id']; // Retorna true se corresponderem
     }
   }
   // Retorna false se nenhum login e senha correspondente for encontrado

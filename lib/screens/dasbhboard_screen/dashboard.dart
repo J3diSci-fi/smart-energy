@@ -215,4 +215,23 @@ class _DashboardPageState extends State<DashboardPage> {
       },
     );
   }
+
+  // Função para atualizar a lista de dispositivos
+  void updateDeviceList(List<dynamic> dispositivos) {
+    setState(() {
+      // Limpa a lista atual de dispositivos
+      _deviceList.clear();
+      // Adiciona os dispositivos recebidos à lista
+      for (var dispositivo in dispositivos) {
+        final name = dispositivo['name'];
+        final label = dispositivo['label'];
+        _deviceList.add({
+          'name': name,
+          'description': label,
+          'mac':'Dude',
+          'serial':'dude'
+        });
+      }
+    });
+  }
 }
