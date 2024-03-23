@@ -5,8 +5,10 @@ class ConfigPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFFEEEEEE),
         title: Text('Configurações'),
       ),
+      backgroundColor: Color(0xFFEEEEEE),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(20.0),
@@ -21,7 +23,8 @@ class ConfigPage extends StatelessWidget {
                     },
                     child: CircleAvatar(
                       radius: 30,
-                      backgroundImage: AssetImage('assets/images/profile_image.jpg'), // Altere o caminho da imagem conforme necessário
+                      backgroundImage: AssetImage(
+                          'assets/images/telefone.png'), // Altere o caminho da imagem conforme necessário
                       child: Icon(
                         Icons.add,
                         size: 30,
@@ -59,42 +62,138 @@ class ConfigPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10),
-              Text('Nome:'),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Digite seu nome',
+              
+              Container(
+                margin: EdgeInsets.fromLTRB(20, 18, 20, 10),
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    icon: Icon(
+                      Icons.person,
+                      color: Color(0xFF1976D2),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade100),
+                    ),
+                    labelText: "Nome",
+                    enabledBorder: InputBorder.none,
+                    labelStyle: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(height: 10),
-              Text('E-mail:'),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Digite seu e-mail',
+           
+              Container(
+                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    icon: Icon(
+                      Icons.email,
+                      color: Color(0xFF1976D2),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade100),
+                    ),
+                    labelText: "E-mail",
+                    enabledBorder: InputBorder.none,
+                    labelStyle: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(height: 10),
-              Text('Telefone(s):'),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Digite seu telefone',
+             
+              Container(
+                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    icon: Icon(
+                      Icons.phone_android,
+                      color: Color(0xFF1976D2),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade100),
+                    ),
+                    labelText: "Telefone",
+                    enabledBorder: InputBorder.none,
+                    labelStyle: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
               // Se desejar adicionar a possibilidade de adicionar múltiplos telefones, pode-se adicionar mais campos aqui
-              SizedBox(height: 20),
-              Text('Senha:'),
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Digite sua senha',
+             
+              Container(
+                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
+                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    icon: Icon(
+                      Icons.key_outlined,
+                      color: Color(0xFF1976D2),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey.shade100),
+                    ),
+                    labelText: "Senha",
+                    enabledBorder: InputBorder.none,
+                    labelStyle: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  // Implemente a lógica para salvar as alterações
-                },
-                child: Text('Salvar Alterações'),
+              
+              Container(
+                margin: EdgeInsets.fromLTRB(20, 10, 20, 30),
+                width: MediaQuery.of(context).size.width * 2,
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1976D2), Color(0xFF64B5F6)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Material(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {},
+                    borderRadius: BorderRadius.circular(20),
+                    splashColor: Colors.amber,
+                    child: Center(
+                      child: Text(
+                        "Confirmar",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
