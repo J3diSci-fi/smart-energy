@@ -1,6 +1,8 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Importe a biblioteca intl
 import 'package:smartenergy_app/screens/login_screen/login.dart';
+import 'package:smartenergy_app/screens/login_screen/login2.dart';
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -8,16 +10,18 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  List<Map<String, String>> _deviceList = []; // Lista para armazenar os dispositivos adicionados
+  List<Map<String, String>> _deviceList =
+      []; // Lista para armazenar os dispositivos adicionados
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            color: Colors.red, // Define o background vermelho
+            color: Colors.black, // Define o background vermelho
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.5),
@@ -32,7 +36,7 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Text(
             'Smart Energy',
             style: TextStyle(
-              fontSize: 20.0,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white, // Define a cor do texto como branco
             ),
@@ -51,27 +55,28 @@ class _DashboardPageState extends State<DashboardPage> {
         },
         child: Icon(Icons.add),
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: Colors.white,
+        color: Colors.black, // Cor dos ícones quando não selecionados
+        buttonBackgroundColor: Colors.grey, // Cor do botão selecionado
+        animationDuration: Duration(milliseconds: 300),
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
+          Icon(
+            Icons.home,
+            color: Colors.white,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Configurações',
+          Icon(
+            Icons.settings,
+            color: Colors.white,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.exit_to_app),
-            label: 'Desconectar',
-          ),
+          Icon(Icons.logout_outlined, color: Colors.white),
         ],
         onTap: (index) {
           if (index == 2) {
             // Sair para a tela de login
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => LoginPage()),
+              MaterialPageRoute(builder: (context) => Login2()),
             );
           } else if (index == 1) {
             // Ir para a tela de configurações
@@ -81,7 +86,6 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
-
   Widget _buildDeviceItem(Map<String, String> device) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 7.0),
@@ -102,14 +106,14 @@ class _DashboardPageState extends State<DashboardPage> {
           leading: CircleAvatar(
             // Placeholder para a imagem do dispositivo
             backgroundColor: Colors.grey,
-            
           ),
           title: Text(device['name'] ?? ''), // Exemplo de texto do dispositivo
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(device['description'] ?? ''), // Descrição do dispositivo
-              Text('Criado em: ${_formatDate(DateTime.now())}'), // Data de criação do dispositivo formatada
+              Text(
+                  'Criado em: ${_formatDate(DateTime.now())}'), // Data de criação do dispositivo formatada
             ],
           ),
           trailing: Container(
@@ -121,7 +125,9 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
           onTap: () {
-            // Implemente a ação ao clicar em um dispositivo
+            // Implemente a ação ao cli
+            //car em um dispositivo
+            Navigator.pushNamed(context, '/dispositivo');
           },
         ),
       ),
@@ -134,10 +140,14 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _showAddDeviceDialog(BuildContext context) {
-    String _newDeviceName = ''; // Variável para armazenar o nome do novo dispositivo
-    String _newDeviceDescription = ''; // Variável para armazenar a descrição do novo dispositivo
-    String _newDeviceMac = ''; // Variável para armazenar o MAC do novo dispositivo
-    String _newDeviceSerial = ''; // Variável para armazenar o Serial Key do novo dispositivo
+    String _newDeviceName =
+        ''; // Variável para armazenar o nome do novo dispositivo
+    String _newDeviceDescription =
+        ''; // Variável para armazenar a descrição do novo dispositivo
+    String _newDeviceMac =
+        ''; // Variável para armazenar o MAC do novo dispositivo
+    String _newDeviceSerial =
+        ''; // Variável para armazenar o Serial Key do novo dispositivo
 
     showDialog(
       context: context,
@@ -150,7 +160,8 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 TextField(
                   onChanged: (value) {
-                    _newDeviceName = value; // Atualizar o nome do dispositivo conforme o usuário digita
+                    _newDeviceName =
+                        value; // Atualizar o nome do dispositivo conforme o usuário digita
                   },
                   decoration: InputDecoration(
                     labelText: 'Nome do Dispositivo',
@@ -159,7 +170,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 SizedBox(height: 10),
                 TextField(
                   onChanged: (value) {
-                    _newDeviceDescription = value; // Atualizar a descrição do dispositivo conforme o usuário digita
+                    _newDeviceDescription =
+                        value; // Atualizar a descrição do dispositivo conforme o usuário digita
                   },
                   decoration: InputDecoration(
                     labelText: 'Descrição',
@@ -168,7 +180,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 SizedBox(height: 10),
                 TextField(
                   onChanged: (value) {
-                    _newDeviceMac = value; // Atualizar o MAC do dispositivo conforme o usuário digita
+                    _newDeviceMac =
+                        value; // Atualizar o MAC do dispositivo conforme o usuário digita
                   },
                   decoration: InputDecoration(
                     labelText: 'MAC',
@@ -177,7 +190,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 SizedBox(height: 10),
                 TextField(
                   onChanged: (value) {
-                    _newDeviceSerial = value; // Atualizar o Serial Key do dispositivo conforme o usuário digita
+                    _newDeviceSerial =
+                        value; // Atualizar o Serial Key do dispositivo conforme o usuário digita
                   },
                   decoration: InputDecoration(
                     labelText: 'Serial Key',
@@ -228,8 +242,8 @@ class _DashboardPageState extends State<DashboardPage> {
         _deviceList.add({
           'name': name,
           'description': label,
-          'mac':'Dude',
-          'serial':'dude'
+          'mac': 'Dude',
+          'serial': 'dude'
         });
       }
     });

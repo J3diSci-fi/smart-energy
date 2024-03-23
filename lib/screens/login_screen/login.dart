@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
 import 'package:smartenergy_app/api/api_devices_controller.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro.dart';
+import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
@@ -45,7 +46,8 @@ class LoginPage extends StatelessWidget {
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      dynamic user = await verifyLoginAndPassword(
+                      try{
+                         dynamic user = await verifyLoginAndPassword(
                         _usernameController.text,
                         _passwordController.text,
                       );
@@ -64,7 +66,13 @@ class LoginPage extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Usuário inválido'),
-                          ),
+                            ),
+                          );
+                        }  
+                      }
+                      catch(e){
+                         ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Ocorreu um erro durante o login')), // limite de customer atingido
                         );
                       }
                     },
@@ -76,7 +84,7 @@ class LoginPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => CadastroScreen()), // Navega para a tela de cadastro
+                    MaterialPageRoute(builder: (context) => CadastroScreen2()), // Navega para a tela de cadastro
                   );//Navegar para a tela de cadastro
                 },
                 child: Container(
