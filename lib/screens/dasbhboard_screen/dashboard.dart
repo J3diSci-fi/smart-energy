@@ -1,8 +1,14 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Importe a biblioteca intl
-import 'package:smartenergy_app/screens/login_screen/login.dart';
+import 'package:provider/provider.dart';
+import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
+import 'package:smartenergy_app/services/Customer_info.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:badges/badges.dart' as badges;
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -10,18 +16,47 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  List<Map<String, String>> _deviceList =
-      []; // Lista para armazenar os dispositivos adicionados
+  List<Map<String, String>> _deviceList = []; // Lista para armazenar os dispositivos adicionados
+  GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+  int notificationCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (CustomerInfo.idCustomer == null || Config.token.isEmpty) {
+      loadCustomerInfo();
+    } else {
+      adicionarDeviceLista();
+    }
+  }
+
+  void loadCustomerInfo() async {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+    String? token = thingsBoardService.getToken();
+    String? idCustomer = await thingsBoardService.tbSecureStorage.getItem("id_customer");
+    
+    if (idCustomer != null && token != null) {
+      CustomerInfo.idCustomer = idCustomer;
+      Config.token = token;
+      adicionarDeviceLista();
+    }
+    else{
+      print("id_Customr $idCustomer, token: $token");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+
+    //setToken(thingsBoardService);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            color: Colors.black, // Define o background vermelho
+            color: const Color.fromRGBO(029 ,161, 242, 1), // Define o background vermelho
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.5),
@@ -33,6 +68,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           padding: EdgeInsets.symmetric(horizontal: 16.0), // Adiciona padding
           alignment: Alignment.center, // Alinha o conteúdo ao centro
+
           child: Text(
             'Smart Energy',
             style: TextStyle(
@@ -51,13 +87,14 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showAddDeviceDialog(context);
+          _showAddDeviceDialog(context, thingsBoardService);
         },
         child: Icon(Icons.add),
       ),
       bottomNavigationBar: CurvedNavigationBar(
+        key: _bottomNavigationKey,
         backgroundColor: Colors.white,
-        color: Colors.black, // Cor dos ícones quando não selecionados
+        color:   Color(0xFF1976D2),// Cor dos ícones quando não selecionados
         buttonBackgroundColor: Colors.grey, // Cor do botão selecionado
         animationDuration: Duration(milliseconds: 300),
         items: [
@@ -70,9 +107,25 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Colors.white,
           ),
           Icon(Icons.logout_outlined, color: Colors.white),
+          badges.Badge(
+            badgeContent: Text(
+              notificationCount.toString(),
+              style: TextStyle(color: Colors.white),
+            ),
+            child: Icon(
+              Icons.notifications,
+              color: Colors.white,
+            ),
+          ),
         ],
         onTap: (index) {
+          if (index == 0) {
+            updateNotificationCount();
+          }
           if (index == 2) {
+            thingsBoardService.tbSecureStorage.deleteItem("login");
+            thingsBoardService.tbSecureStorage.deleteItem("senha");
+            thingsBoardService.tbSecureStorage.deleteItem("id_customer");
             // Sair para a tela de login
             Navigator.pushReplacement(
               context,
@@ -80,12 +133,38 @@ class _DashboardPageState extends State<DashboardPage> {
             );
           } else if (index == 1) {
             // Ir para a tela de configurações
-            Navigator.pushNamed(context, '/configs');
+            Navigator.pushNamed(context, '/configs').then((result) {
+              if (result != null && result is bool && result) {
+                _bottomNavigationKey.currentState
+                    ?.setPage(0); // Define o índice selecionado como 0 (home)
+              }
+            });
+          } else if (index == 3) {
+            resetNotificationCount();
+            Navigator.pushNamed(context, '/notificacoes').then((result) {
+              if (result != null && result is bool && result) {
+                _bottomNavigationKey.currentState
+                    ?.setPage(0); // Define o índice selecionado como 0 (home)
+              }
+            });
           }
         },
       ),
     );
   }
+
+  void updateNotificationCount() {
+    setState(() {
+      notificationCount = notificationCount + 1;
+    });
+  }
+
+  void resetNotificationCount() {
+    setState(() {
+      notificationCount = 0;
+    });
+  }
+
   Widget _buildDeviceItem(Map<String, String> device) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 7.0),
@@ -104,8 +183,9 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         child: ListTile(
           leading: CircleAvatar(
-            // Placeholder para a imagem do dispositivo
+            backgroundImage: AssetImage('assets/images/fazenda.png'),
             backgroundColor: Colors.grey,
+            radius: 25.0,
           ),
           title: Text(device['name'] ?? ''), // Exemplo de texto do dispositivo
           subtitle: Column(
@@ -127,6 +207,7 @@ class _DashboardPageState extends State<DashboardPage> {
           onTap: () {
             // Implemente a ação ao cli
             //car em um dispositivo
+
             Navigator.pushNamed(context, '/dispositivo');
           },
         ),
@@ -139,7 +220,8 @@ class _DashboardPageState extends State<DashboardPage> {
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
-  void _showAddDeviceDialog(BuildContext context) {
+  void _showAddDeviceDialog(
+      BuildContext context, ThingsBoardService thingsBoardService) {
     String _newDeviceName =
         ''; // Variável para armazenar o nome do novo dispositivo
     String _newDeviceDescription =
@@ -209,17 +291,39 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             TextButton(
               onPressed: () {
-                // Adicionar lógica para adicionar dispositivo
-                if (_newDeviceName.isNotEmpty) {
+                if (_newDeviceName.isNotEmpty &&
+                    _newDeviceDescription.isNotEmpty &&
+                    _newDeviceMac.isNotEmpty &&
+                    _newDeviceSerial.isNotEmpty) {
                   setState(() {
                     _deviceList.add({
                       'name': _newDeviceName,
                       'description': _newDeviceDescription,
                       'mac': _newDeviceMac,
                       'serial': _newDeviceSerial,
-                    }); // Adicionar o novo dispositivo à lista
+                    });
                   });
+                  thingsBoardService.adicionarDevice(_newDeviceName,
+                      _newDeviceDescription, _newDeviceMac, _newDeviceSerial);
                   Navigator.of(context).pop();
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Aviso"),
+                        content: Text("Por favor, preencha todos os campos!"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("OK"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 }
               },
               child: Text("Adicionar"),
@@ -228,6 +332,61 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       },
     );
+  }
+
+  void adicionarDeviceLista() async {
+    String? id_customer = CustomerInfo.idCustomer;
+    print("Printando o id do customer pra saber se tá vazio: $id_customer");
+    String token = Config.token;
+    var url = Uri.parse(
+        'https://thingsboard.cloud:443/api/customer/$id_customer/devices?pageSize=20&page=0');
+    var headers = {
+      'accept': 'application/json',
+      'X-Authorization': 'Bearer $token',
+    };
+    var response = await http.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var devices = jsonResponse['data'];
+      for (var device in devices) {
+        var name = device['name'];
+        var id = device['id']['id'];
+        var description = device['additionalInfo']['description'];
+        var mac = device['additionalInfo']['mac'];
+        var serialKey = device['additionalInfo']['serialKey'];
+        setState(() {
+          // se eu criar o device pelo site  sem passar mac, serialKey, vai dar error aqui, pq vai passar ocmo null por isso que deve-se ser criado pelo app que n da erro
+          _deviceList.add({
+            'name': name,
+            'description': description,
+            'mac': mac,
+            'serial': serialKey,
+          });
+        });
+        print("Requesição dos devices do cliente deu certo");
+        print(
+            'Device ID: $id, Description: $description, MAC: $mac, Serial Key: $serialKey');
+      }
+    } else {
+      print('Request failed with status: ${response.statusCode}');
+    }
+  }
+
+  void adicionarDeviceForaDoDialog() {
+    // metodo pra adicionar na lista os que já existem
+    String newName = 'filipe';
+    String newDescription = 'hahahaha';
+    String newMac = '00000-9999';
+    String newSerial = '1291313';
+
+    setState(() {
+      _deviceList.add({
+        'name': newName,
+        'description': newDescription,
+        'mac': newMac,
+        'serial': newSerial,
+      });
+    });
   }
 
   // Função para atualizar a lista de dispositivos

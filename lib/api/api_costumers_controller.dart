@@ -12,6 +12,7 @@ Future<int> criarCustomer({
   required String cidade,
   required String endereco,
   required String complemento,
+  
 }) async {
   final url = Uri.parse('${Config.apiUrl}/customer');
 
@@ -22,7 +23,8 @@ Future<int> criarCustomer({
   };
 
   final ownerId = {
-    "id": "13645f00-d68a-11ee-a550-01ba59c8406b", //id do owner(conta principal)
+    "id": "d27d1680-d9c2-11ee-a922-37ae9eb95d8c", //id do owner(conta principal)
+           
     "entityType": "DEVICE"
   };
 
@@ -93,8 +95,8 @@ Future<dynamic> getAllCustomers() async {
     return null; // Retorna null em caso de erro
   }
 }
-
-dynamic verifyLoginAndPassword(String login, String senha) async {
+// se der erro quando tu digitar um usuario e senha que n existem, é pq tem customer criados manualmente no thingboard sem os parametros [passowrd] aí quando tenta acessar dar erro
+dynamic verifyLoginAndPassword(String login, String senha) async { 
   dynamic jsonData = await getAllCustomers();
   final data = jsonData['data'];
 
