@@ -7,6 +7,13 @@ class ConfigPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Color(0xFFEEEEEE),
         title: Text('Configurações'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop(true); 
+            
+          },
+        ),
       ),
       backgroundColor: Color(0xFFEEEEEE),
       body: SingleChildScrollView(
@@ -24,7 +31,7 @@ class ConfigPage extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 30,
                       backgroundImage: AssetImage(
-                          'assets/images/telefone.png'), // Altere o caminho da imagem conforme necessário
+                          'assets/images/profile.png'), // Altere o caminho da imagem conforme necessário
                       child: Icon(
                         Icons.add,
                         size: 30,
@@ -62,7 +69,7 @@ class ConfigPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              
+
               Container(
                 margin: EdgeInsets.fromLTRB(20, 18, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -87,7 +94,7 @@ class ConfigPage extends StatelessWidget {
                   ),
                 ),
               ),
-           
+
               Container(
                 margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -112,7 +119,7 @@ class ConfigPage extends StatelessWidget {
                   ),
                 ),
               ),
-             
+
               Container(
                 margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -138,7 +145,7 @@ class ConfigPage extends StatelessWidget {
                 ),
               ),
               // Se desejar adicionar a possibilidade de adicionar múltiplos telefones, pode-se adicionar mais campos aqui
-             
+
               Container(
                 margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -163,7 +170,7 @@ class ConfigPage extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               Container(
                 margin: EdgeInsets.fromLTRB(20, 10, 20, 30),
                 width: MediaQuery.of(context).size.width * 2,

@@ -19,7 +19,7 @@ class InforScreen extends StatelessWidget {
                   GestureDetector(
                     
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.of(context).pop(true); 
                     },
                     child: const Icon(
                       Icons.arrow_back_ios,
@@ -88,6 +88,17 @@ class InforScreen extends StatelessWidget {
                           text: "Saldo",
                           icon: 'assets/images/saldo.png',
                           title: '20',
+                        ),
+                        _cardMenu(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/notificacoes');
+                          },
+                          text: "Histórico",
+                          icon: 'assets/images/documento (2).png',
+                          title: 'Notificações',
+                          
+                          //color: Colors.indigoAccent,
+                          //fontColor: Colors.white,
                         ),
                         
                       ],

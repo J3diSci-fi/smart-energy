@@ -2,8 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 
+
+void createDevice(String cusomerId) async{
+  
+
+}
+
 Future<List<dynamic>> getDispositivos(String customerId) async {
-  final url = '${Config.apiUrl}/customer/$customerId/devices?pageSize=10&page=0';
+  final url = '${Config.apiUrl}/customer/$customerId/devices?pageSize=20&page=0';
   final headers = {
     'accept': 'application/json',
     'X-Authorization': 'Bearer ${Config.token}'
@@ -21,7 +27,7 @@ Future<List<dynamic>> getDispositivos(String customerId) async {
 
 void main() async {
   try {
-    String customerId = 'c85e4c80-d9e7-11ee-a2dd-dda04d5a084f';
+    String customerId = '57a85cc0-e639-11ee-bf71-bd1e2ee8c819';
     List<dynamic> dispositivos = await getDispositivos(customerId);
     print(dispositivos);
   } catch (e) {

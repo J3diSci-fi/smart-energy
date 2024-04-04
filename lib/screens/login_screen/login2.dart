@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
-import 'package:smartenergy_app/api/api_devices_controller.dart';
-import 'package:smartenergy_app/screens/login_screen/cadastro.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
+import 'package:smartenergy_app/services/Customer_info.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 
 class Login2 extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
@@ -10,6 +12,9 @@ class Login2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    Config.token = thingsBoardService.getToken()!;
+    
     return Scaffold(
       backgroundColor: Color(0xFFEEEEEE),
       body: Stack(
@@ -119,17 +124,23 @@ class Login2 extends StatelessWidget {
                                 _passwordController.text,
                               );
                               if (user != null) {
+                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
+                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
+                                print("Printando o user que foi salvo no login: $user");
+                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
+                                CustomerInfo.idCustomer = user;
                                 Navigator.pushNamed(context, '/profile');
-                                print(user);
-                                List<dynamic> dispositivos =
-                                    await getDispositivos(user);
-                                for (var dispositivo in dispositivos) {
-                                  final id = dispositivo['id']['id'];
-                                  final name = dispositivo['name'];
-                                  final label = dispositivo['label'];
-                                  print(
-                                      'ID: $id, Name: $name, Label: $label');
-                                }
+      
+                                //print(user);
+                                //List<dynamic> dispositivos =
+                                   // await getDispositivos(user);
+                                //for (var dispositivo in dispositivos) {
+                                  //final id = dispositivo['id']['id'];
+                                  //final name = dispositivo['name'];
+                                  //final label = dispositivo['label'];
+                                  //print(
+                                      //'ID: $id, Name: $name, Label: $label');
+                                //}
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -138,9 +149,8 @@ class Login2 extends StatelessWidget {
                               }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          'Por favor, preencha todos os campos.')));
+                                  SnackBar(content: Text( 'Por favor, preencha todos os campos.'))
+                              );
                             }
                           },
                           borderRadius: BorderRadius.circular(20),
@@ -170,9 +180,11 @@ class Login2 extends StatelessWidget {
                         ),
                         TextButton(
                           onPressed: () {
+                            
                             Navigator.push(
                               context,
                               MaterialPageRoute(
+                                
                                   builder: (context) => CadastroScreen2()),
                             ); // Navegar para a tela de cadastro
                           },
