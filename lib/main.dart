@@ -7,6 +7,7 @@ import 'package:smartenergy_app/services/tbclient_service.dart';
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+  
   ThingsBoardService thingsBoardService = ThingsBoardService(); // quando for usar mude o login e senha
   await thingsBoardService.isLoggedIn();
   runApp(
