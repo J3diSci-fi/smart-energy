@@ -30,17 +30,19 @@ class ThingsBoardService {
   String? getToken(){
     return tbClient.getJwtToken();
   }
-  void adicionarDevice(String nome, String descricao, String mac, String serialKey){
+    Future<String> adicionarDevice(String nome, String descricao, String mac, String serialKey, String data) async{
     var device = Device(nome,'default');
-    device.additionalInfo = {'description': descricao,'mac': mac, 'serialKey': serialKey};
+    device.additionalInfo = {'description': descricao,'mac': mac, 'serialKey': serialKey, 'data': data};
     String? id = CustomerInfo.idCustomer;
     print("Printando o id do customer que foi associado ao device:$id");
     EntityId customerId = CustomerId(id ?? 'default_value');
     device.setOwnerId(customerId);
-    var savedDevice = tbClient.getDeviceService().saveDevice(device);
+    Device savedDevice = await tbClient.getDeviceService().saveDevice(device);
+  
+  // Convertendo o ID do dispositivo para uma string
+    String deviceId = savedDevice.id?.id ?? 'N/A';
+    return deviceId;
     
-    print("Adicionado com sucesso!");
-   
   }
   
 }
