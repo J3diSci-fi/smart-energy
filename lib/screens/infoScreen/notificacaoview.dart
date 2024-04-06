@@ -11,7 +11,7 @@ class _NotificationViewState extends State<NotificationView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 8, 8, 8),
+      backgroundColor: Color(0xFFEEEEEE),
       appBar: appBar(),
       body: Container(
         margin: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
@@ -22,6 +22,7 @@ class _NotificationViewState extends State<NotificationView> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(
+            
             padding: EdgeInsets.all(8),
             child: listView(),
           ),
@@ -32,15 +33,15 @@ class _NotificationViewState extends State<NotificationView> {
 
   PreferredSizeWidget appBar() {
     return AppBar(
-      backgroundColor: Colors.black,
+      backgroundColor: Color(0xFFEEEEEE),
       title: Text(
         'Notificações',
         style: TextStyle(
-          color: Colors.white,
+          color: Colors.black,
         ),
       ),
       iconTheme: IconThemeData(
-        color: Colors.white,
+        color: Colors.black,
       ),
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
@@ -52,7 +53,9 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   Widget listView() {
+    
     return ListView.separated(
+      
       itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {

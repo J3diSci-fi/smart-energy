@@ -2,21 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart'; // Para usar TextInputType.numberWithOptions
 
-class MyApp extends StatelessWidget {
+class CadastroScreen2 extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Cadastro',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: CadastroScreen2(),
-    );
-  }
+  _CadastroScreen2 createState() => _CadastroScreen2();
 }
 
-class CadastroScreen2 extends StatelessWidget {
+class _CadastroScreen2 extends State<CadastroScreen2> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   final TextEditingController _confirmaSenhaController =
@@ -28,13 +19,15 @@ class CadastroScreen2 extends StatelessWidget {
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _complementoController = TextEditingController();
   final TextEditingController _cepController = TextEditingController();
+  bool _obscureText = true;
+  bool _obscureText2 = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Cadastro'),
-        backgroundColor:Color(0xFFEEEEEE) ,
+        backgroundColor: Color(0xFFEEEEEE),
       ),
       backgroundColor: Color(0xFFEEEEEE),
       body: SingleChildScrollView(
@@ -69,7 +62,7 @@ class CadastroScreen2 extends StatelessWidget {
                 ),
               ),
               Container(
-                margin: EdgeInsets.fromLTRB(20, 40, 20, 10),
+                margin: EdgeInsets.fromLTRB(20, 20, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -77,10 +70,22 @@ class CadastroScreen2 extends StatelessWidget {
                 ),
                 child: TextField(
                   controller: _senhaController,
+                  obscureText: _obscureText, // Oculta ou mostra a senha
                   decoration: InputDecoration(
                     icon: Icon(
                       Icons.vpn_key,
                       color: Color(0xFF1976D2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey.shade100),
@@ -94,7 +99,7 @@ class CadastroScreen2 extends StatelessWidget {
                 ),
               ),
               Container(
-                margin: EdgeInsets.fromLTRB(20, 40, 20, 10),
+                margin: EdgeInsets.fromLTRB(20, 20, 20, 10),
                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -102,10 +107,22 @@ class CadastroScreen2 extends StatelessWidget {
                 ),
                 child: TextField(
                   controller: _confirmaSenhaController,
+                  obscureText: _obscureText2, // Oculta ou mostra a senha
                   decoration: InputDecoration(
                     icon: Icon(
-                      Icons.done,
+                      Icons.vpn_key,
                       color: Color(0xFF1976D2),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText2 ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText2 = !_obscureText2;
+                        });
+                      },
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey.shade100),
@@ -304,7 +321,6 @@ class CadastroScreen2 extends StatelessWidget {
                   ),
                 ),
               ),
-              
               Container(
                 margin: EdgeInsets.fromLTRB(20, 20, 20, 30),
                 width: MediaQuery.of(context).size.width * 2,
@@ -322,10 +338,12 @@ class CadastroScreen2 extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () async {
-                      if(_validateFields()){
+                      if (_validateFields()) {
                         _cadastrar(context);
-                      }else{
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Por favor, preencha todos os campos.')));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content:
+                                Text('Por favor, preencha todos os campos.')));
                       }
                     },
                     borderRadius: BorderRadius.circular(20),

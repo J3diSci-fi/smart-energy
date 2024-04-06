@@ -6,13 +6,20 @@ import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 
-class Login2 extends StatelessWidget {
+class Login2 extends StatefulWidget {
+  @override
+  _Login2State createState() => _Login2State();
+}
+
+class _Login2State extends State<Login2> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscureText = true;
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     Config.token = thingsBoardService.getToken()!;
     
     return Scaffold(
@@ -28,7 +35,8 @@ class Login2 extends StatelessWidget {
             ),
           ),
           Align(
-            alignment: Alignment.topCenter, // Ajuste aqui para alinhar o conteúdo ao topo
+            alignment: Alignment
+                .topCenter, // Ajuste aqui para alinhar o conteúdo ao topo
             child: Container(
               margin: EdgeInsets.only(
                   top: MediaQuery.of(context).size.height * 0.4),
@@ -50,8 +58,7 @@ class Login2 extends StatelessWidget {
                             color: Color(0xFF1976D2),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey.shade100),
+                            borderSide: BorderSide(color: Colors.grey.shade100),
                           ),
                           labelText: "Usuário",
                           enabledBorder: InputBorder.none,
@@ -70,14 +77,27 @@ class Login2 extends StatelessWidget {
                       ),
                       child: TextField(
                         controller: _passwordController,
+                        obscureText: _obscureText, // Oculta ou mostra a senha
                         decoration: InputDecoration(
                           icon: Icon(
                             Icons.vpn_key,
                             color: Color(0xFF1976D2),
                           ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureText
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureText = !_obscureText; 
+                              });
+                            },
+                          ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey.shade100),
+                            borderSide: BorderSide(color: Colors.grey.shade100),
                           ),
                           labelText: "Senha",
                           enabledBorder: InputBorder.none,
@@ -124,33 +144,36 @@ class Login2 extends StatelessWidget {
                                 _passwordController.text,
                               );
                               if (user != null) {
-                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
-                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
-                                print("Printando o user que foi salvo no login: $user");
-                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("login", _usernameController.text);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("senha", _passwordController.text);
+                                print(
+                                    "Printando o user que foi salvo no login: $user");
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("id_customer", user);
                                 CustomerInfo.idCustomer = user;
                                 Navigator.pushNamed(context, '/profile');
-      
+
                                 //print(user);
                                 //List<dynamic> dispositivos =
-                                   // await getDispositivos(user);
+                                // await getDispositivos(user);
                                 //for (var dispositivo in dispositivos) {
-                                  //final id = dispositivo['id']['id'];
-                                  //final name = dispositivo['name'];
-                                  //final label = dispositivo['label'];
-                                  //print(
-                                      //'ID: $id, Name: $name, Label: $label');
+                                //final id = dispositivo['id']['id'];
+                                //final name = dispositivo['name'];
+                                //final label = dispositivo['label'];
+                                //print(
+                                //'ID: $id, Name: $name, Label: $label');
                                 //}
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                        content:
-                                            Text('Usuario Inválido!')));
+                                        content: Text('Usuario Inválido!')));
                               }
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text( 'Por favor, preencha todos os campos.'))
-                              );
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Por favor, preencha todos os campos.')));
                             }
                           },
                           borderRadius: BorderRadius.circular(20),
@@ -180,11 +203,9 @@ class Login2 extends StatelessWidget {
                         ),
                         TextButton(
                           onPressed: () {
-                            
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                
                                   builder: (context) => CadastroScreen2()),
                             ); // Navegar para a tela de cadastro
                           },
