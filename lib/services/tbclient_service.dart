@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbStorage.dart';
@@ -27,10 +28,65 @@ class ThingsBoardService {
   ThingsboardClient  getTbClient(){
     return tbClient;
   }
+  
   String? getToken(){
     return tbClient.getJwtToken();
   }
-    Future<String> adicionarDevice(String nome, String descricao, String mac, String serialKey, String data) async{
+
+  void editarDevice(String nome, String id_device, String descricao, String mac, String serial, String data) async {
+  String url = 'https://thingsboard.cloud:443/api/device';
+  String token = Config.token;
+  String tenantId = tbClient.getAuthUser()!.tenantId;
+  String? customer_id = CustomerInfo.idCustomer;
+
+  Map<String, String> headers = {
+    'accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Authorization': 'Bearer $token',
+  };
+
+  Map<String, dynamic> body = {
+    "id": {
+      "id": id_device,
+      "entityType": "DEVICE"
+    },
+    "tenantId": {
+      "id": tenantId,
+      "entityType": "TENANT"
+    },
+    "customerId": {
+      "id": customer_id,
+      "entityType": "CUSTOMER"
+    },
+    "ownerId": {
+      "id": customer_id,
+      "entityType": "CUSTOMER"
+    },
+    "name": nome,
+    "type": "default",
+    "label": "SmartEnergy",
+    "deviceData": {
+      "configuration": {"type": "DEFAULT"},
+      "transportConfiguration": {"type": "DEFAULT"}
+    },
+    "additionalInfo": {
+      "description": descricao,
+      "mac": mac,
+      "serialKey": serial,
+      "data": data
+    }
+  };
+
+  String jsonBody = jsonEncode(body);
+
+  http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+
+  print('Response status: ${response.statusCode}');
+  print('Response body: ${response.body}');
+  
+  }
+
+  Future<String> adicionarDevice(String nome, String descricao, String mac, String serialKey, String data) async{
     var device = Device(nome,'default');
     device.additionalInfo = {'description': descricao,'mac': mac, 'serialKey': serialKey, 'data': data};
     String? id = CustomerInfo.idCustomer;
@@ -44,5 +100,7 @@ class ThingsBoardService {
     return deviceId;
     
   }
+
+
   
 }
