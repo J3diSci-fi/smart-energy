@@ -182,7 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: Icon(Icons.more_horiz), // sugestões de icones guys: Icons.settings, Icons.menu,arrow_drop_down, expand_more,more_horiz
             onSelected: (String value) {
               if (value == 'editar') {
-                // Implemente a lógica para editar o dispositivo
+                _showAddDeviceDialogEdit(context,thingsBoardService,device);// Implemente a lógica para editar o dispositivo
               } else if (value == 'deletar') {
                 _deleteDevice(device,  thingsBoardService);
                 
@@ -235,16 +235,124 @@ String _formatDate(DateTime date) {
     // Método para formatar a data
     return DateFormat('dd-MM-yyyy').format(date);
   }
+void _showAddDeviceDialogEdit(BuildContext context, ThingsBoardService thingsBoardService, Map<String, String> device) {
+    TextEditingController _nameController = TextEditingController(text: device['name']);
+    TextEditingController _descriptionController = TextEditingController(text: device['description']);
+    TextEditingController _macController = TextEditingController(text: device['mac']);
+    TextEditingController _serialController = TextEditingController(text: device['serial']);
+    String id_device = device['id']!;
+    String data = device['data']!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Alterar Dispositivo"),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nameController,
+                  onChanged: (value) {
+                    // Atualizar o nome do dispositivo conforme o usuário digita
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Nome do Dispositivo',
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: _descriptionController,
+                  onChanged: (value) {
+                    // Atualizar a descrição do dispositivo conforme o usuário digita
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Descrição',
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: _macController,
+                  onChanged: (value) {
+                    // Atualizar o MAC do dispositivo conforme o usuário digita
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'MAC',
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: _serialController,
+                  onChanged: (value) {
+                    // Atualizar o Serial Key do dispositivo conforme o usuário digita
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Serial Key',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () async {
+                String _newDeviceName = _nameController.text;
+                String _newDeviceDescription = _descriptionController.text;
+                String _newDeviceMac = _macController.text;
+                String _newDeviceSerial = _serialController.text;
+                if (_newDeviceName.isNotEmpty &&
+                    _newDeviceDescription.isNotEmpty &&
+                    _newDeviceMac.isNotEmpty &&
+                    _newDeviceSerial.isNotEmpty) {
+                    thingsBoardService.editarDevice(_newDeviceName, id_device, _newDeviceDescription, _newDeviceMac,_newDeviceSerial, data);
+                    setState(() {
+                      device['name'] = _newDeviceName;
+                      device['description'] = _newDeviceDescription;
+                      device['mac'] = _newDeviceMac;
+                      device['serial'] = _newDeviceSerial;
+                    });
+                   
+                   
+                    Navigator.of(context).pop();
 
+                }else {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Aviso"),
+                        content: Text("Por favor, preencha todos os campos!"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("OK"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: Text("Alterar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
   void _showAddDeviceDialog(BuildContext context, ThingsBoardService thingsBoardService) {
-    String _newDeviceName =
-        ''; // Variável para armazenar o nome do novo dispositivo
-    String _newDeviceDescription =
-        ''; // Variável para armazenar a descrição do novo dispositivo
-    String _newDeviceMac =
-        ''; // Variável para armazenar o MAC do novo dispositivo
-    String _newDeviceSerial =
-        ''; // Variável para armazenar o Serial Key do novo dispositivo
+    String _newDeviceName = ''; // Variável para armazenar o nome do novo dispositivo
+    String _newDeviceDescription =''; // Variável para armazenar a descrição do novo dispositivo
+    String _newDeviceMac =''; // Variável para armazenar o MAC do novo dispositivo
+    String _newDeviceSerial =''; // Variável para armazenar o Serial Key do novo dispositivo
 
     showDialog(
       context: context,
