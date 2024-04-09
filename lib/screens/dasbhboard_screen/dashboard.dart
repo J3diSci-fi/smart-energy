@@ -145,7 +145,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildDeviceItem(Map<String, String> device, ThingsBoardService thingsBoardService) {
   String data = device['data']!;
   return Padding(
-    padding: EdgeInsets.symmetric(horizontal: 7.0, vertical: 7.0),
+    padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
     child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -160,6 +160,7 @@ class _DashboardPageState extends State<DashboardPage> {
         ],
       ),
       child: ListTile(
+        
         leading: CircleAvatar(
           backgroundImage: AssetImage('assets/images/fazenda.png'),
           backgroundColor: Colors.grey,
@@ -212,6 +213,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ),
+        
         onTap: () {
           Navigator.pushNamed(context, '/dispositivo'); // Implemente a lógica para abrir detalhes do dispositivo
         },

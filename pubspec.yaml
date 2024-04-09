@@ -37,6 +37,9 @@ dependencies:
   badges: ^2.0.1
   thingsboard_pe_client: 1.0.7
   provider: ^6.1.2
+  firebase_messaging: ^14.7.18
+  firebase_core: ^2.27.1
+  flutter_local_notifications: ^16.0.0+1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

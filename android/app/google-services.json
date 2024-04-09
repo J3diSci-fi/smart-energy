@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "98609120228",
+    "project_id": "smartenergy-888e4",
+    "storage_bucket": "smartenergy-888e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98609120228:android:81ea4c982dc023bc06bdf1",
+        "android_client_info": {
+          "package_name": "com.example.smartenergy_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxEcUDlhLkjcrHsNJDU7UsYJrsk0ElYmU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
