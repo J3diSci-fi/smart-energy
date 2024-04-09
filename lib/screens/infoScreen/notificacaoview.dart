@@ -103,13 +103,18 @@ class _NotificationViewState extends State<NotificationView> {
     );
   }
 
-  Widget confirmedListViewItem(int index) {
-    return Container(
+ Widget confirmedListViewItem(int index) {
+  return Card(
+    elevation: 4,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Container(
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400),
+        border: Border.all(color: Colors.green),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +130,7 @@ class _NotificationViewState extends State<NotificationView> {
             child: Icon(
               Icons.notifications,
               size: 25,
-              color: Colors.grey.shade700,
+              color: Colors.green,
             ),
           ),
           SizedBox(width: 16),
@@ -146,11 +151,17 @@ class _NotificationViewState extends State<NotificationView> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget unconfirmedListViewItem(int index) {
-    return Container(
+Widget unconfirmedListViewItem(int index) {
+  return Card(
+    elevation: 4,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Container(
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -192,6 +203,7 @@ class _NotificationViewState extends State<NotificationView> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
