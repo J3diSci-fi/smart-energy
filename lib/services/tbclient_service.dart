@@ -33,7 +33,7 @@ class ThingsBoardService {
     return tbClient.getJwtToken();
   }
 
-  void editarDevice(String nome, String id_device, String descricao, String mac, String serial, String data) async {
+  void editarDevice(String nome, String id_device, String descricao, String serial, String data) async {
   String url = 'https://thingsboard.cloud:443/api/device';
   String token = Config.token;
   String tenantId = tbClient.getAuthUser()!.tenantId;
@@ -71,7 +71,6 @@ class ThingsBoardService {
     },
     "additionalInfo": {
       "description": descricao,
-      "mac": mac,
       "serialKey": serial,
       "data": data
     }
@@ -85,10 +84,38 @@ class ThingsBoardService {
   print('Response body: ${response.body}');
   
   }
+Future<bool> verificar_serialKey(String serial) async{
+  final String url = '${Config.apiUrl}/user/devices?pageSize=1000&page=0';
+  final Map<String, String> headers = {
+    'accept': 'application/json',
+    'X-Authorization':
+        'Bearer ${Config.token}'
+  };
+  final uri = Uri.parse(url);
+  final response = await http.get(uri, headers: headers);
 
-  Future<String> adicionarDevice(String nome, String descricao, String mac, String serialKey, String data) async{
+  if (response.statusCode == 200) {
+    print('Requisição bem-sucedida!');
+    final data = json.decode(response.body);
+    final dados = data['data'];
+    
+    for (var devices in dados) {
+      final serial_Key = devices['additionalInfo']['serialKey'];
+      print("Printando o serial_key: $serial_Key , printando o serial: $serial");
+      if(serial_Key.trim() == serial.trim()){
+        return true;
+      }
+    }
+    return false;
+  } else {
+    print('Erro ao fazer a solicitação. Código de status: ${response.statusCode}');
+    return false; // Retorna null em caso de erro
+  }
+}
+
+  Future<String> adicionarDevice(String nome, String descricao, String serialKey, String data) async{
     var device = Device(nome,'default');
-    device.additionalInfo = {'description': descricao,'mac': mac, 'serialKey': serialKey, 'data': data};
+    device.additionalInfo = {'description': descricao, 'serialKey': serialKey, 'data': data};
     String? id = CustomerInfo.idCustomer;
     print("Printando o id do customer que foi associado ao device:$id");
     EntityId customerId = CustomerId(id ?? 'default_value');

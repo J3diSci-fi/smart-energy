@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:smartenergy_app/services/Customer_info.dart';
+import 'package:http/http.dart' as http;
+import 'package:smartenergy_app/api/api_cfg.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:animated_splash_screen/animated_splash_screen.dart';
 
 class NotificationView extends StatefulWidget {
   @override
@@ -6,43 +13,199 @@ class NotificationView extends StatefulWidget {
 }
 
 class _NotificationViewState extends State<NotificationView> {
-  List<bool> confirmados = List.filled(5, false);
+  List<Map<String, dynamic>> _alarmes = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEEEEEE),
       appBar: appBar(),
-      body: Container(
-        margin: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-        child: Card(
-          color: Colors.white, // Altera a cor de fundo do Card para verde
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            
-            padding: EdgeInsets.all(8),
-            child: listView(),
-          ),
-        ),
-      ),
+      body: _buildListView(),
     );
   }
 
+  Widget _buildListView() {
+  return ListView.builder(
+    itemCount: _alarmes.length,
+    itemBuilder: (context, index) {
+      var alarm = _alarmes[index];
+      var nome = alarm['nome'] ?? '';
+      var detalhes = alarm['detalhes'] ?? '';
+      var status = alarm['status'] ?? '';
+      var data = alarm['data'] ?? '';
+      
+      // Definindo uma cor padrão
+      Color color = Colors.green;
+      IconData icon = Icons.check_circle; // Ícone padrão para status "CLEARED_ACK"
+
+      // Verificando o status do alarme
+      if (status == "Confirmado") {
+        color = Colors.green;
+        icon = Icons.check_circle;
+      } else {
+        color = Colors.red;
+        icon = Icons.error;
+      }
+
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
+        child:  Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // Altera a posição da sombra
+              ),
+            ],
+          ),
+          child: ListTile(
+            leading: Icon(
+              icon,
+              color: color,
+              size: 43.0,
+            ),
+            title: Text(
+              nome,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(detalhes),
+                SizedBox(height: 5),
+                Text(
+                  'Status: $status',
+                  style: TextStyle(color: color),
+                ),
+                Text('Data: $data'),
+              ],
+            ),
+            onTap: () {
+              if (status != "Confirmado") {
+                _confirmarAlarme(alarm);
+              }
+            },
+          ),
+        ),
+      );
+    },
+  );
+}
+void  confirmar(String id, String token) async{
+  var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/ack');
+  var headers = {
+    'accept': 'application/json',
+    'X-Authorization': 'Bearer $token',
+  };
+
+  var response = await http.post(url, headers: headers);
+
+  if (response.statusCode == 200) {
+    print('Confirmado com sucesso');
+  } else {
+    print('Erro ao confirmar o alarme: ${response.statusCode}');
+  }
+}
+
+void  clear (String id, String token) async{
+  var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/clear');
+  var headers = {
+    'accept': 'application/json',
+    'X-Authorization': 'Bearer $token',
+  };
+
+  var response = await http.post(url, headers: headers);
+
+  if (response.statusCode == 200) {
+    print('limpou com sucesso');
+  } else {
+    print('Erro ao limpar o alarme: ${response.statusCode}');
+  }
+}
+
+
+void _confirmarAlarme(Map<String, dynamic> alarm) {
+  String token = Config.token;
+  //confirmar
+  confirmar(alarm['id'], token);
+  //clear
+  clear(alarm['id'], token);
+
+  setState(() {
+   alarm['status'] = "Confirmado";
+  });
+
+  
+}
+
+  void fetchData() async {
+  String? id_customer = CustomerInfo.idCustomer;
+  String token = Config.token;
+  var url = Uri.parse(
+      'https://thingsboard.cloud/api/alarm/CUSTOMER/$id_customer?pageSize=20&page=0');
+  var headers = {
+    'accept': 'application/json',
+    'X-Authorization': 'Bearer $token',
+  };
+
+  var response = await http.get(url, headers: headers);
+
+  if (response.statusCode == 200) {
+    var jsonResponse = jsonDecode(response.body);
+    var alarms = jsonResponse['data'];
+    for (var alarm in alarms) {
+      var id = alarm['id']['id'];
+      var createdTimeMillis = alarm['createdTime'];
+      var details = alarm['details'].toString();
+      var status = alarm['status'];
+      var name = alarm['originatorName'];
+
+      // Ajusta a data e hora em 3 horas para trás
+      var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis)
+          .subtract(Duration(hours: 3));
+
+      // Formata a data e hora no padrão brasileiro
+      var formattedDateTime =
+          DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+
+      if (status == "CLEARED_ACK") {
+        status = "Confirmado";
+      } else {
+        status = "Não confirmado";
+      }
+      setState(() {
+        _alarmes.add({
+          'nome': name,
+          'detalhes': details,
+          'status': status,
+          'id': id,
+          'data': formattedDateTime,
+        });
+      });
+    }
+  } else {
+    print('Erro: ${response.statusCode}');
+  }
+}
+
   PreferredSizeWidget appBar() {
     return AppBar(
-      backgroundColor: Color(0xFFEEEEEE),
+      backgroundColor: Colors.white,
+      elevation: 0,
       title: Text(
         'Notificações',
-        style: TextStyle(
-          color: Colors.black,
-        ),
+        style: TextStyle(color: Colors.black),
       ),
-      iconTheme: IconThemeData(
-        color: Colors.black,
-      ),
+      iconTheme: IconThemeData(color: Colors.black),
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
         onPressed: () {
@@ -51,159 +214,4 @@ class _NotificationViewState extends State<NotificationView> {
       ),
     );
   }
-
-  Widget listView() {
-    
-    return ListView.separated(
-      
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            if (!confirmados[index]) {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text('Confirmar notificação'),
-                  content: Text('Deseja confirmar a notificação?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('Cancelar'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          confirmados[index] = true;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Notificação confirmada por Jonas'),
-                          ),
-                        );
-                        Navigator.of(context).pop();
-                      },
-                      child: Text('Confirmar'),
-                    ),
-                  ],
-                ),
-              );
-            }
-          },
-          child: confirmados[index]
-              ? confirmedListViewItem(index)
-              : unconfirmedListViewItem(index),
-        );
-      },
-      separatorBuilder: (context, index) {
-        return SizedBox(height: 8);
-      },
-      itemCount: 5,
-    );
-  }
-
- Widget confirmedListViewItem(int index) {
-  return Card(
-    elevation: 4,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.green),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade300,
-            ),
-            child: Icon(
-              Icons.notifications,
-              size: 25,
-              color: Colors.green,
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "25/03/2024 | 13:40:00 PM | Falta de energia | Fazenda da Bahia | Jonas",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget unconfirmedListViewItem(int index) {
-  return Card(
-    elevation: 4,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade400),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade300,
-            ),
-            child: Icon(
-              Icons.notifications,
-              size: 25,
-              color: const Color.fromARGB(255, 189, 30, 30),
-            ),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "25/03/2024 | 13:40:00 PM | Falta de energia | Fazenda da Bahia",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 }

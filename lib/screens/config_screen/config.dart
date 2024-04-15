@@ -1,211 +1,194 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 
-class ConfigPage extends StatelessWidget {
+class ConfigPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFEEEEEE),
-        title: Text('Configurações'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop(true); 
-            
-          },
-        ),
-      ),
+  _ConfigPageState createState() => _ConfigPageState();
+}
+
+class _ConfigPageState extends State<ConfigPage> {
+  String? nome;
+  String? telefone;
+  String? email;
+  bool isLoading = true; // Flag para controle de carregamento
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      var thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+      var loadedNome = await thingsBoardService.tbSecureStorage.getItem("nome");
+      var loadedTelefone = await thingsBoardService.tbSecureStorage.getItem("telefone");
+      var loadedEmail = await thingsBoardService.tbSecureStorage.getItem("email");
+  
+      setState(() {
+        nome = loadedNome;
+        telefone = loadedTelefone;
+        email = loadedEmail;
+        isLoading = false;
+       
+      });
+    } catch (e) {  // Atualizar o estado para refletir que o carregamento termin
+      // Adicionar tratamento de erro aqui
+      print('Erro ao carregar dados: $e');
+    }
+  }
+
+  @override
+Widget build(BuildContext context) {
+  if (isLoading) {
+    // Mostra uma tela de carregamento enquanto os dados não estão prontos
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
+  return Scaffold(
+    appBar: AppBar(
       backgroundColor: Color(0xFFEEEEEE),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // Implemente a lógica para selecionar uma nova imagem de perfil
-                    },
-                    child: CircleAvatar(
-                      radius: 30,
-                      backgroundImage: AssetImage(
-                          'assets/images/profile.png'), // Altere o caminho da imagem conforme necessário
-                      child: Icon(
-                        Icons.add,
-                        size: 30,
-                        color: Colors.white,
-                      ),
+      title: Text('Configurações'),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.of(context).pop(true);
+        },
+      ),
+    ),
+    backgroundColor: Color(0xFFEEEEEE),
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Implemente a lógica para selecionar uma nova imagem de perfil
+                  },
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFEEEEEE),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Nome do Usuário',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        'email@example.com',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Informações Pessoais',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 18, 20, 10),
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    icon: Icon(
+                    child: Icon(
                       Icons.person,
-                      color: Color(0xFF1976D2),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade100),
-                    ),
-                    labelText: "Nome",
-                    enabledBorder: InputBorder.none,
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
+                      size: 40,
+                      color: Colors.black,
                     ),
                   ),
                 ),
-              ),
-
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    icon: Icon(
-                      Icons.email,
-                      color: Color(0xFF1976D2),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade100),
-                    ),
-                    labelText: "E-mail",
-                    enabledBorder: InputBorder.none,
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    icon: Icon(
-                      Icons.phone_android,
-                      color: Color(0xFF1976D2),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade100),
-                    ),
-                    labelText: "Telefone",
-                    enabledBorder: InputBorder.none,
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-              // Se desejar adicionar a possibilidade de adicionar múltiplos telefones, pode-se adicionar mais campos aqui
-
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 15, 20, 10),
-                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    icon: Icon(
-                      Icons.key_outlined,
-                      color: Color(0xFF1976D2),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey.shade100),
-                    ),
-                    labelText: "Senha",
-                    enabledBorder: InputBorder.none,
-                    labelStyle: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-
-              Container(
-                margin: EdgeInsets.fromLTRB(20, 10, 20, 30),
-                width: MediaQuery.of(context).size.width * 2,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF1976D2), Color(0xFF64B5F6)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Material(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {},
-                    borderRadius: BorderRadius.circular(20),
-                    splashColor: Colors.amber,
-                    child: Center(
-                      child: Text(
-                        "Confirmar",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
+                SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nome!,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(height: 5),
+                    Text(
+                      email!,
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Informações Pessoais',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 18, 20, 10),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              decoration: BoxDecoration(
+                color: Color(0xFFEEEEEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.person,
+                    color: Color(0xFF1976D2),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFEEEEEE)),
+                  ),
+                  labelText: nome,
+                  enabledBorder: InputBorder.none,
+                  labelStyle: TextStyle(
+                    color: Colors.black,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 15, 20, 10),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              decoration: BoxDecoration(
+                color: Color(0xFFEEEEEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.email,
+                    color: Color(0xFF1976D2),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFEEEEEE)),
+                  ),
+                  labelText: email,
+                  enabledBorder: InputBorder.none,
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 15, 20, 10),
+              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              decoration: BoxDecoration(
+                color: Color(0xFFEEEEEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  icon: Icon(
+                    Icons.phone_android,
+                    color: Color(0xFF1976D2),
+                  ),
+                  labelText: telefone,
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            // Se desejar adicionar a possibilidade de adicionar múltiplos telefones, pode-se adicionar mais campos aqui
+          ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

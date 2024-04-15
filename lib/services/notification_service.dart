@@ -4,8 +4,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   Future<void> initNotification() async {
-    AndroidInitializationSettings initializationSettingsAndroid =
-        const AndroidInitializationSettings('logo180');
+    AndroidInitializationSettings initializationSettingsAndroid =const AndroidInitializationSettings('logomaior');
 
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
