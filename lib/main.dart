@@ -12,8 +12,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   ThingsBoardService thingsBoardService = ThingsBoardService();
-   await thingsBoardService.isLoggedIn();
-   await Firebase.initializeApp(
+  await thingsBoardService.isLoggedIn();
+
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   ); 
   await FirebaseApi().initNotifications();

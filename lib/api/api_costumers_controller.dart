@@ -29,7 +29,7 @@ Future<int> criarCustomer({
   };
 
   final body = json.encode({
-    "title": login,
+    "title": login.toLowerCase(),
     "ownerId": ownerId,
     "country": "BR",
     "state": estado,
@@ -40,7 +40,7 @@ Future<int> criarCustomer({
     "phone": '+55$telefone',
     "email": email,
     "additionalInfo": {
-      "password": senha
+      "password": senha.toLowerCase(),
     }
   });
 
@@ -90,6 +90,7 @@ Future<dynamic> getAllCustomers() async {
     print('Requisição bem-sucedida!');
     final data = json.decode(response.body);
     return data;
+
   } else {
     print('Erro ao fazer a solicitação. Código de status: ${response.statusCode}');
     return null; // Retorna null em caso de erro
@@ -105,10 +106,11 @@ dynamic verifyLoginAndPassword(String login, String senha) async {
     final password = customer['additionalInfo']['password'];
     
     // Verifica se o login e a senha correspondem
-    if (title == login && password == senha) {
+    if (title == login.toLowerCase() && password == senha.toLowerCase()) {
       //print(customer);
       //print(customer['id']['id']);
-      return customer['id']['id']; // Retorna true se corresponderem
+      //return customer['id']['id']; // Retorna true se corresponderem
+      return customer;
     }
   }
   // Retorna false se nenhum login e senha correspondente for encontrado

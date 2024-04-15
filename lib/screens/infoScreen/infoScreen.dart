@@ -1,120 +1,247 @@
+import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:web_socket_channel/io.dart';
+import 'dart:convert';
 
-class InforScreen extends StatelessWidget {
+class InfoScreen extends StatefulWidget {
+  final Map<String, String> device;
+
+  const InfoScreen({Key? key, required this.device}) : super(key: key);
+
+  @override
+  _InfoScreenState createState() => _InfoScreenState();
+}
+
+class _InfoScreenState extends State<InfoScreen> {
+  final channel2 = IOWebSocketChannel.connect('ws://thingsboard.cloud/api/ws');
+  String energia = "";
+  String numero = "";
+  String saldo = "";
+  bool isLoading = true; // Adicione uma variável para controlar o estado de carregamento
+
+  @override
+  void initState() {
+    super.initState();
+    adicionarDevice();
+    leitura();
+  }
+
+  @override
+  void dispose() {
+    channel2.sink.close();
+    super.dispose();
+}
+
+void leitura() {
+  channel2.stream.listen((message) {
+    print("chamou tmb");
+    var jsonResponse = jsonDecode(message);
+    var data = jsonResponse['data'];
+
+    if (data.isEmpty) {
+      print("entrou no vazio");
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else if (data != null) {
+      if (data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')) {
+        var energiaData = data['energia'][0][1];
+        var saldo_dv = data['saldo'][0][1];
+        var numero_dv = data['numero'][0][1];
+
+        if (energia != energiaData || saldo != saldo_dv || numero != numero_dv) {
+          if (mounted) {
+            setState(() {
+              energia = energiaData;
+              saldo = saldo_dv;
+              numero = numero_dv;
+              isLoading = false;
+            });
+          }
+        } else {
+          print("Dados são os mesmos, não atualiza UI.");
+        }
+      }
+    } else {
+      print("Dados não são válidos.");
+    }
+  });
+}
+
+  void adicionarDevice() {
+    print("Foi chamado");
+    String id_device = widget.device['id']!;
+    String serial = widget.device['serial']!;
+    channel2.sink.add(jsonEncode({
+      "authCmd": {
+        "cmdId": 0,
+        "token": Config.token,
+      },
+      "cmds": [
+        {
+          "entityType": "DEVICE",
+          "entityId": id_device,
+          "scope": "LATEST_TELEMETRY",
+          "cmdId": serial,
+          "type": "TIMESERIES",
+        }
+      ]
+    }));
+  }
+
+  void exibirDeviceInfo() {
+    String id_device = widget.device['id']!;
+    String data = widget.device['data']!;
+    String nome = widget.device['name']!;
+    print(id_device);
+    print(data);
+    print(nome);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.indigo.shade50,
       body: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.only(top: 18, left: 24, right: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                
-                children: [
-                  GestureDetector(
-                    
-                    onTap: () {
-                      Navigator.of(context).pop(true); 
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_ios,
-                      color: Colors.indigo,
-                    ),
-                  ),
-                  
-                ],
-              ),
-              Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
+        child: isLoading
+            ? SplashScreen() // Mostra o Splash Screen enquanto estiver carregando
+            : Container(
+                margin: const EdgeInsets.only(top: 18, left: 24, right: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 0),
-                    Center(
-                      child: Image.asset(
-                        'assets/images/banner2.png',
-                        scale: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Center(
-                      child: Text(
-                        'SmartEnergy',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'SERVIÇOS',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _cardMenu(
-                          text: "Energia",
-                          icon: 'assets/images/energy.png',
-                          title: 'ON',
-                        ),
-                        _cardMenu(
+                        GestureDetector(
                           onTap: () {
-                            
+                            channel2.sink.close();
+                            Navigator.of(context).pop();
                           },
-                          text: "Número",
-                          icon: 'assets/images/telefone.png',
-                          title: '99565880',
-                          //color: Colors.indigoAccent,
-                          //fontColor: Colors.white,
+                          child: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.indigo,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 28),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        
-                        _cardMenu(
-                          text: "Saldo",
-                          icon: 'assets/images/saldo.png',
-                          title: '20',
-                        ),
-                        _cardMenu(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/notificacoes');
-                          },
-                          text: "Histórico",
-                          icon: 'assets/images/documento (2).png',
-                          title: 'Notificações',
-                          
-                          //color: Colors.indigoAccent,
-                          //fontColor: Colors.white,
-                        ),
-                        
-                      ],
+                    Expanded(
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
+                        children: [
+                          const SizedBox(height: 0),
+                          Center(
+                            child: Image.asset(
+                              'assets/images/banner2.png',
+                              scale: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Center(
+                            child: Text(
+                              'SmartEnergy',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'SERVIÇOS',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _cardMenu(
+                                text: "Energia",
+                                icon: 'assets/images/energy.png',
+                                title: energia,
+                              ),
+                              _cardMenu(
+                                onTap: () {},
+                                text: "Número",
+                                icon: 'assets/images/telefone.png',
+                                title: numero,
+                                //color: Colors.indigoAccent,
+                                //fontColor: Colors.white,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _cardMenu(
+                                text: "Saldo",
+                                icon: 'assets/images/saldo.png',
+                                title: saldo,
+                              ),
+                              _cardMenu(
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/notificacoes');
+                                },
+                                text: "Histórico",
+                                icon: 'assets/images/documento (2).png',
+                                title: 'Notificações',
+
+                                //color: Colors.indigoAccent,
+                                //fontColor: Colors.white,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 28),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
+}
 
-  Widget _cardMenu({
+class EmptyScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(); // Widget vazio
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSplashScreen(
+      splash: Column(
+        children: [
+          Center(
+            child: LottieBuilder.asset(
+              "assets/Lottie/Animation - 1712852951040.json",
+              width: 180,
+              height: 180,
+            ),
+          )
+        ],
+      ),
+      splashIconSize: 180,
+      backgroundColor: Color.fromARGB(255, 250, 250, 250),
+      nextScreen: EmptyScreen(),
+    );
+  }
+}
+
+Widget _cardMenu({
   required String text,
   required String title,
   required String icon,
@@ -133,7 +260,6 @@ class InforScreen extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(24),
       ),
-      
       child: Column(
         children: [
           Text(
@@ -154,5 +280,4 @@ class InforScreen extends StatelessWidget {
       ),
     ),
   );
-  }
 }

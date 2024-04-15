@@ -6,17 +6,17 @@ void main(List<String> args) async {
     var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
 
     // Perform login with default Tenant Administrator credentials
-    await tbClient.login(LoginRequest('gabriellyromana2000@gmail.com', 'sistema1999'));
+    await tbClient.login(LoginRequest('norietecarvalho12@gmail.com', 'sistema1999'));
     print(tbClient.getJwtToken());
     print('isAuthenticated=${tbClient.isAuthenticated()}');
 
-    Customer? customer = await tbClient.getCustomerService().getCustomer("57a85cc0-e639-11ee-bf71-bd1e2ee8c819");
-    print(customer?.getEntityType());
+    //Customer? customer = await tbClient.getCustomerService().getCustomer("57a85cc0-e639-11ee-bf71-bd1e2ee8c819");
+   // print(customer?.getEntityType());
     
     
-    Device? device = await tbClient.getDeviceService().getDevice("5d4ca6d0-ee46-11ee-ad30-b74a0679875d");
-    print(device?.id);
-    print(device?.additionalInfo);
+    //Device? device = await tbClient.getDeviceService().getDevice("5d4ca6d0-ee46-11ee-ad30-b74a0679875d");
+    //print(device?.id);
+    //print(device?.additionalInfo);
     //device?.customerId = customer?.id;
     //await tbClient.getDeviceService().saveDevice(device!, accessToken: tbClient.getJwtToken());
     

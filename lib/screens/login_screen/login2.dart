@@ -139,32 +139,24 @@ class _Login2State extends State<Login2> {
                           onTap: () async {
                             if (_usernameController.text.isNotEmpty &&
                                 _passwordController.text.isNotEmpty) {
-                              dynamic user = await verifyLoginAndPassword(
+                              dynamic customer = await verifyLoginAndPassword(
                                 _usernameController.text,
                                 _passwordController.text,
                               );
-                              if (user != null) {
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("login", _usernameController.text);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("senha", _passwordController.text);
-                                print(
-                                    "Printando o user que foi salvo no login: $user");
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("id_customer", user);
+                              if (customer != null) {
+                                var user = customer['id']['id'];
+                                var telefone = customer['phone'];
+                                var email = customer['email'];
+                                var nome = customer['title'];
                                 CustomerInfo.idCustomer = user;
-                                Navigator.pushNamed(context, '/profile');
+                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
+                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
+                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
+                                thingsBoardService.tbSecureStorage.setItem("telefone", telefone);
+                                thingsBoardService.tbSecureStorage.setItem("email", email);
+                                thingsBoardService.tbSecureStorage.setItem("nome", nome);
 
-                                //print(user);
-                                //List<dynamic> dispositivos =
-                                // await getDispositivos(user);
-                                //for (var dispositivo in dispositivos) {
-                                //final id = dispositivo['id']['id'];
-                                //final name = dispositivo['name'];
-                                //final label = dispositivo['label'];
-                                //print(
-                                //'ID: $id, Name: $name, Label: $label');
-                                //}
+                                Navigator.pushNamed(context, '/profile');
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
