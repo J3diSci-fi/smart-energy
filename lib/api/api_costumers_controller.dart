@@ -24,7 +24,6 @@ Future<int> criarCustomer({
 
   final ownerId = {
     "id": "d27d1680-d9c2-11ee-a922-37ae9eb95d8c", //id do owner(conta principal)
-           
     "entityType": "DEVICE"
   };
 
@@ -38,7 +37,7 @@ Future<int> criarCustomer({
     "address2": complemento,
     "zip": cep,
     "phone": '+55$telefone',
-    "email": email,
+    "email": email.toLowerCase(),
     "additionalInfo": {
       "password": senha.toLowerCase(),
     }
@@ -115,4 +114,69 @@ dynamic verifyLoginAndPassword(String login, String senha) async {
   }
   // Retorna false se nenhum login e senha correspondente for encontrado
   return null;
+}
+Future<Map<String, String>> retornarLoginSenha(String email) async { 
+  dynamic jsonData = await getAllCustomers();
+  final data = jsonData['data'];
+
+  for (var customer in data) {
+    final emaill = customer['email'];
+  
+    if (emaill == email.toLowerCase()) {
+      final login = customer['title'];
+      final senha = customer['additionalInfo']['password'];
+      
+      return {'login': login, 'senha': senha};
+    }
+  }
+
+  return {}; // Retorna null se o email não for encontrado
+}
+
+Future <bool> sendEmail(String client_email, String login, String senha) async{
+  final service_id = "service_h9kuzxt";
+  final templateId = "template_2sftte6";
+  final userId = "P9ZkyGOdmNuwxNjqR";
+  final url = Uri.parse("https://api.emailjs.com/api/v1.0/email/send");
+  final response = await http.post(
+  url,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: jsonEncode({
+    'service_id':service_id,
+    'template_id': templateId,
+    'user_id': userId,
+    'template_params': {
+        'user_email': client_email,
+        'client_email':client_email,
+        "message": "Seu login é: $login e sua senha é: $senha",
+       
+    }
+  
+  }),
+  );
+  if(response.statusCode == 200){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
+
+Future<bool> verificarEmail(String email) async { 
+  dynamic jsonData = await getAllCustomers();
+  final data = jsonData['data'];
+
+  for (var customer in data) {
+    final emaill = customer['email'];
+  
+    // Verifica se o login e a senha correspondem
+    if (emaill == email.toLowerCase()) {
+      return true;
+    }
+    
+  }
+  return false;
+ 
 }

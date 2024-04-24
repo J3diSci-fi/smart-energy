@@ -388,33 +388,66 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
 
   void _cadastrar(BuildContext context) async {
     final String email = _emailController.text;
+    bool emailExiste = await verificarEmail(email);
+    if (!emailExiste) {
+      try {
+        final int statusCode = await criarCustomer(
+          login: _loginController.text,
+          senha: _senhaController.text,
+          email: _emailController.text,
+          telefone: _telefoneController.text,
+          cep: _cepController.text,
+          estado: _estadoController.text,
+          cidade: _cidadeController.text,
+          endereco: _enderecoController.text,
+          complemento: _complementoController.text,
+        );
 
-    try {
-      final int statusCode = await criarCustomer(
-        login: _loginController.text,
-        senha: _senhaController.text,
-        email: _emailController.text,
-        telefone: _telefoneController.text,
-        cep: _cepController.text,
-        estado: _estadoController.text,
-        cidade: _cidadeController.text,
-        endereco: _enderecoController.text,
-        complemento: _complementoController.text,
-      );
-
-      if (statusCode == 200) {
-        // Exibir AlertDialog com sucesso
+        if (statusCode == 200) {
+          // Exibir AlertDialog com sucesso
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Sucesso'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 40),
+                  SizedBox(height: 8),
+                  Text('$email\nCadastrado com sucesso!'),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else if (statusCode == 403 || statusCode == 400) {
+          // Exibir Snackbar com a mensagem de usuário já cadastrado
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Usuário já cadastrado (login em uso)!')),
+          );
+        }
+      } catch (e) {
+        print('Erro ao realizar a requisição: $e');
+        // Exibir AlertDialog com erro
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Sucesso'),
+            title: Text('Erro'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 40),
+                Icon(Icons.error_outline, color: Colors.red, size: 40),
                 SizedBox(height: 8),
-                Text('$email\nCadastrado com sucesso.'),
+                Text('Erro ao cadastrar usuário!'),
               ],
             ),
             actions: [
@@ -427,37 +460,10 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
             ],
           ),
         );
-      } else if (statusCode == 403 || statusCode == 400) {
-        // Exibir Snackbar com a mensagem de usuário já cadastrado
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuário já cadastrado (login em uso).')),
-        );
       }
-    } catch (e) {
-      print('Erro ao realizar a requisição: $e');
-      // Exibir AlertDialog com erro
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Erro'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 40),
-              SizedBox(height: 8),
-              Text('Erro ao cadastrar usuário.'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
+    } else {
+       ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email já cadastrado. Por favor, tente com um email diferente!')),
       );
     }
   }

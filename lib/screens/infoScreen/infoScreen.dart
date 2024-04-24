@@ -2,6 +2,7 @@ import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:smartenergy_app/screens/infoScreen/alarmeDeviceScreen.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
 
@@ -36,7 +37,7 @@ class _InfoScreenState extends State<InfoScreen> {
 
 void leitura() {
   channel2.stream.listen((message) {
-    print("chamou tmb");
+  
     var jsonResponse = jsonDecode(message);
     var data = jsonResponse['data'];
 
@@ -48,8 +49,31 @@ void leitura() {
         });
       }
     } else if (data != null) {
+      if(data.containsKey('energia')){ // para testar a merda
+        var energiaData = data['energia'][0][1];
+
+        if(energiaData == "true"){
+          print("Energia true no infoscrenn");
+            setState(() {
+              energia = "Energia OFF";
+            });
+        }
+        else{
+          setState(() {
+              print("Energia false no infoscrenn");
+             energia = "Energia ON";
+          });
+         
+        }
+      }
       if (data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')) {
         var energiaData = data['energia'][0][1];
+        if(energiaData == "true"){
+            energiaData = "Energia OFF";
+        }
+        else{
+          energiaData = "Energia ON";
+        }
         var saldo_dv = data['saldo'][0][1];
         var numero_dv = data['numero'][0][1];
 
@@ -189,7 +213,13 @@ void leitura() {
                               ),
                               _cardMenu(
                                 onTap: () {
-                                  Navigator.pushNamed(context, '/notificacoes');
+                                  //Navigator.pushNamed(context, '/notificacoes');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DeviceAlarme(device_id: widget.device['id']!),
+                                    ),
+                                  );
                                 },
                                 text: "Histórico",
                                 icon: 'assets/images/documento (2).png',

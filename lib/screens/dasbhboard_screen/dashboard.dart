@@ -4,6 +4,7 @@ import 'package:intl/intl.dart'; // Importe a biblioteca intl
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/Widget/customerTopBar.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:smartenergy_app/api/firebase_api.dart';
 import 'package:smartenergy_app/api/splash.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
@@ -53,6 +54,13 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     ThingsBoardService thingsBoardService =Provider.of<ThingsBoardService>(context);
+    FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
+    String? id_customer = CustomerInfo.idCustomer;
+    if(id_customer!=null){
+      firebaseApi.subscribeCustomerIdTopic(id_customer);
+      print("Cadastrado no topico com sucesso $id_customer");
+    }
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -86,16 +94,17 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Colors.white,
           ),
           Icon(Icons.logout_outlined, color: Colors.white),
-          badges.Badge(
-            badgeContent: Text(
-              notificationCount.toString(),
-              style: TextStyle(color: Colors.white),
-            ),
-            child: Icon(
-              Icons.notifications,
-              color: Colors.white,
-            ),
-          ),
+          Icon(Icons.notifications,color: Colors.white),
+          //badges.Badge(
+           // badgeContent: Text(
+             // notificationCount.toString(),
+             // style: TextStyle(color: Colors.white),
+            //),
+            //child: Icon(
+            //  Icons.notifications,
+             // color: Colors.white,
+            //),
+         //),
         ],
         onTap: (index) {
           if (index == 0) {
@@ -108,6 +117,7 @@ class _DashboardPageState extends State<DashboardPage> {
             thingsBoardService.tbSecureStorage.deleteItem("telefone");
             thingsBoardService.tbSecureStorage.deleteItem("email");
             thingsBoardService.tbSecureStorage.deleteItem("nome");
+            firebaseApi.unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
             channel.sink.close();
             // Sair para a tela de login
             Navigator.pushReplacement(
