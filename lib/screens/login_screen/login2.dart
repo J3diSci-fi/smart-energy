@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
+import 'package:smartenergy_app/screens/recuperarsenha/recuperarsenha.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 
@@ -111,11 +112,20 @@ class _Login2State extends State<Login2> {
                       alignment: Alignment.centerRight,
                       child: Container(
                         margin: EdgeInsets.fromLTRB(0, 10, 20, 10),
-                        child: Text(
-                          "Esqueceu sua Senha?",
-                          style: TextStyle(
-                            color: Color(0xFF1976D2),
-                            fontSize: 15,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => RecuperarSenha()),
+                            ); // Navegar para a tela de cadastro
+                          },
+                          child: Text(
+                            "Esqueceu sua Senha?",
+                            style: TextStyle(
+                              color: Color(0xFF1976D2),
+                              fontSize: 15,
+                            ),
                           ),
                         ),
                       ),

@@ -14,15 +14,15 @@ void main() async {
   ThingsBoardService thingsBoardService = ThingsBoardService();
   await thingsBoardService.isLoggedIn();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  ); 
-  await FirebaseApi().initNotifications();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,); 
+  FirebaseApi firebaseApi = FirebaseApi();
+  await firebaseApi.initNotifications();
  
   runApp(
     MultiProvider(
       providers: [
         Provider<ThingsBoardService>.value(value: thingsBoardService),
+        Provider<FirebaseApi>.value(value: firebaseApi), // Fornecer a instância de FirebaseApi
       ],
       child: MyApp(),
     ),

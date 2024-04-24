@@ -89,11 +89,34 @@ class _NotificationViewState extends State<NotificationView> {
                 Text('Data: $data'),
               ],
             ),
-            onTap: () {
-              if (status != "Confirmado") {
-                _confirmarAlarme(alarm);
-              }
-            },
+             onTap: () {
+                if (status != "Confirmado") {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Confirmar Alarme"),
+                        content: Text("Deseja confirmar este alarme?"),
+                        actions: [
+                          TextButton(
+                            child: Text("Cancelar"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text("Confirmar"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              _confirmarAlarme(alarm);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
           ),
         ),
       );
@@ -128,7 +151,7 @@ void  clear (String id, String token) async{
   if (response.statusCode == 200) {
     print('limpou com sucesso');
   } else {
-    print('Erro ao limpar o alarme: ${response.statusCode}');
+    print('O alarme já foi limpo: ${response.statusCode}');
   }
 }
 
@@ -151,7 +174,7 @@ void _confirmarAlarme(Map<String, dynamic> alarm) {
   String? id_customer = CustomerInfo.idCustomer;
   String token = Config.token;
   var url = Uri.parse(
-      'https://thingsboard.cloud/api/alarm/CUSTOMER/$id_customer?pageSize=20&page=0');
+      'https://thingsboard.cloud/api/alarm/CUSTOMER/$id_customer?pageSize=30&page=0&sortProperty=createdTime&sortOrder=DESC');
   var headers = {
     'accept': 'application/json',
     'X-Authorization': 'Bearer $token',
