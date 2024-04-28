@@ -190,7 +190,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
         var details = alarm['details'].toString();
         var status = alarm['status'];
         var name = alarm['originatorName'];
-
+        String novoNome = name.split("-")[0];
         // Ajusta a data e hora em 3 horas para trás
         var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis)
             .subtract(Duration(hours: 3));
@@ -206,7 +206,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
         }
         setState(() {
           _alarmes.add({
-            'nome': name,
+            'nome': novoNome,
             'detalhes': details,
             'status': status,
             'id': id,

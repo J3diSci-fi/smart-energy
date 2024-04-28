@@ -6,7 +6,7 @@ void main(List<String> args) async {
     var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
 
     // Perform login with default Tenant Administrator credentials
-    await tbClient.login(LoginRequest('norietecarvalho12@gmail.com', 'sistema1999'));
+    await tbClient.login(LoginRequest('smartenergy.033@gmail.com', 'smartenergy1999'));
     print(tbClient.getJwtToken());
     print('isAuthenticated=${tbClient.isAuthenticated()}');
 

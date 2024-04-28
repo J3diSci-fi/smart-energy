@@ -19,8 +19,7 @@ class _Login2State extends State<Login2> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     Config.token = thingsBoardService.getToken()!;
     
     return Scaffold(

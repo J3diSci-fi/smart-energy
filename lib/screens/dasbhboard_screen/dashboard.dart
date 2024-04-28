@@ -300,6 +300,7 @@ class _DashboardPageState extends State<DashboardPage> {
               print("Cor atualizada para verde");
             }); // Atualizar para verde
           }
+         
           break;
         
         } else {
@@ -311,6 +312,7 @@ class _DashboardPageState extends State<DashboardPage> {
   });
   
 }
+
 
   void _deleteDevice(
       Map<String, String> device, ThingsBoardService thingsBoardService) {
