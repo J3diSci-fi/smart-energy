@@ -23,7 +23,7 @@ Future<int> criarCustomer({
   };
 
   final ownerId = {
-    "id": "d27d1680-d9c2-11ee-a922-37ae9eb95d8c", //id do owner(conta principal)
+    "id": "b2a57df0-04d5-11ef-ac64-c1f214c97728", //id do owner(conta principal)
     "entityType": "DEVICE"
   };
 

@@ -191,6 +191,7 @@ void _confirmarAlarme(Map<String, dynamic> alarm) {
       var details = alarm['details'].toString();
       var status = alarm['status'];
       var name = alarm['originatorName'];
+      String novoNome = name.split("-")[0];
 
       // Ajusta a data e hora em 3 horas para trás
       var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis)
@@ -207,7 +208,7 @@ void _confirmarAlarme(Map<String, dynamic> alarm) {
       }
       setState(() {
         _alarmes.add({
-          'nome': name,
+          'nome': novoNome,
           'detalhes': details,
           'status': status,
           'id': id,

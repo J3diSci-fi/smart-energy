@@ -4,6 +4,7 @@ import 'package:smartenergy_app/services/notification_service.dart';
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   AppCore.soundManager.playSong();
+  print("Foi chamado ao ser clicado handleBackgroundMessage");
 }
 
 class FirebaseApi {
@@ -44,10 +45,9 @@ class FirebaseApi {
       final notification = message.notification;
       final notificationTitle = notification!.title;
       final notificationBody = notification.body;
-
-      notificationService.showNotification(
-          title: notificationTitle, body: notificationBody);
+      notificationService.showNotification(title: notificationTitle, body: notificationBody);
       AppCore.soundManager.playSong();
+       print("Foi chamado ao ser clicado onMessage");
     });
   }
 }

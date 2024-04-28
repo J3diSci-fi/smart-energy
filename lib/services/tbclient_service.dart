@@ -17,7 +17,7 @@ class ThingsBoardService {
  
   }
   Future<void> _login() async {
-    await tbClient.login(LoginRequest('norietecarvalho12@gmail.com', 'sistema1999'));
+    await tbClient.login(LoginRequest('smartenergy.033@gmail.com', 'smartenergy1999'));
     _isLoggedIn = true;
     
   }
@@ -84,12 +84,11 @@ class ThingsBoardService {
   print('Response body: ${response.body}');
   
   }
-Future<bool> verificar_serialKey(String serial) async{
+  Future<bool> verificar_serialKey(String serial) async {
   final String url = '${Config.apiUrl}/user/devices?pageSize=1000&page=0';
   final Map<String, String> headers = {
     'accept': 'application/json',
-    'X-Authorization':
-        'Bearer ${Config.token}'
+    'X-Authorization': 'Bearer ${Config.token}'
   };
   final uri = Uri.parse(url);
   final response = await http.get(uri, headers: headers);
@@ -97,21 +96,33 @@ Future<bool> verificar_serialKey(String serial) async{
   if (response.statusCode == 200) {
     print('Requisição bem-sucedida!');
     final data = json.decode(response.body);
-    final dados = data['data'];
-    
-    for (var devices in dados) {
-      final serial_Key = devices['additionalInfo']['serialKey'];
-      print("Printando o serial_key: $serial_Key , printando o serial: $serial");
-      if(serial_Key.trim() == serial.trim()){
-        return true;
+    final devices = data['data'];
+
+    // Verifica se a lista de dispositivos está vazia
+    if (devices.isEmpty) {
+      print('A lista de dispositivos está vazia.');
+      return false;
+    }
+
+    for (var device in devices) {
+      // Verifica se a chave 'additionalInfo' e 'serialKey' existem antes de acessá-las
+      if (device.containsKey('additionalInfo') && device['additionalInfo'] is Map &&
+          device['additionalInfo'].containsKey('serialKey')) {
+        final serialKey = device['additionalInfo']['serialKey'];
+        print("Serial Key: $serialKey, Serial: $serial");
+
+        if (serialKey.trim() == serial.trim()) {
+          return true;
+        }
       }
     }
-    return false;
+    return false; // Retorna false se não encontrar o serialKey
   } else {
     print('Erro ao fazer a solicitação. Código de status: ${response.statusCode}');
-    return false; // Retorna null em caso de erro
+    return false; // Retorna false em caso de erro
   }
 }
+
 
   Future<String> adicionarDevice(String nome, String descricao, String serialKey, String data) async{
     var device = Device(nome,'default');
