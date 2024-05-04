@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:smartenergy_app/api/api_costumers_controller.dart'; // Para usar TextInputType.numberWithOptions
+import 'package:smartenergy_app/api/api_costumers_controller.dart';
 
 class RecuperarSenha extends StatefulWidget {
   @override
@@ -114,9 +114,9 @@ class _RecuperarSenha extends State<RecuperarSenha> {
       if (dados.isNotEmpty) {
         final String? login = dados['login'];
         final String? senha = dados['senha'];
-        
+
         bool requesicao = await sendEmail(email, login!, senha!);
-        if(requesicao){
+        if (requesicao) {
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -140,23 +140,16 @@ class _RecuperarSenha extends State<RecuperarSenha> {
               ],
             ),
           );
-
-        }
-        else{
-            ScaffoldMessenger.of(context).showSnackBar(
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Erro ao enviar email!')),
           );
-
         }
-
-      }
-      else{
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ocorreu um erro!')),
-      );
-
+          SnackBar(content: Text('Ocorreu um erro!')),
+        );
       }
-      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Email não encontrado!')),

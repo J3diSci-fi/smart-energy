@@ -462,8 +462,10 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
         );
       }
     } else {
-       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Email já cadastrado. Por favor, tente com um email diferente!')),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Email já cadastrado. Por favor, tente com um email diferente!')),
       );
     }
   }

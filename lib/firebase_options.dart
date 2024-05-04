@@ -50,19 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCxEcUDlhLkjcrHsNJDU7UsYJrsk0ElYmU',
-    appId: '1:98609120228:android:81ea4c982dc023bc06bdf1',
-    messagingSenderId: '98609120228',
-    projectId: 'smartenergy-888e4',
-    storageBucket: 'smartenergy-888e4.appspot.com',
+    apiKey: 'AIzaSyDEQs74OgYfMAJ_o0ZxZXiCAyDBrCUizXU',
+            
+    appId: '1:784856083124:android:9c341f0178dbd78ac505e1',
+    messagingSenderId: '784856083124',
+    projectId: 'smartrural-25835',
+    storageBucket: 'smartrural-25835.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAOPC3y46WVOX2o1FfINAHd2EnrOGG4wc4',
-    appId: '1:98609120228:ios:2d6f226e138145e006bdf1',
-    messagingSenderId: '98609120228',
-    projectId: 'smartenergy-888e4',
-    storageBucket: 'smartenergy-888e4.appspot.com',
-    iosBundleId: 'com.example.smartenergyApp',
+    apiKey: 'AIzaSyDEQs74OgYfMAJ_o0ZxZXiCAyDBrCUizXU',
+    appId: '1:784856083124:android:9c341f0178dbd78ac505e1',
+    messagingSenderId: '784856083124',
+    projectId: 'smartrural-25835',
+    storageBucket: 'smartrural-25835.appspot.com',
+    iosBundleId: 'com.smartrural.aquatic.app',
   );
 }

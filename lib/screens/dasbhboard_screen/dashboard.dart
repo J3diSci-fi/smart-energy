@@ -1,11 +1,10 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Importe a biblioteca intl
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/Widget/customerTopBar.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
-import 'package:smartenergy_app/api/splash.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
@@ -23,7 +22,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final channel = IOWebSocketChannel.connect('ws://thingsboard.cloud/api/ws');
 
-  List<Map<String, String>> _deviceList =[];
+  List<Map<String, String>> _deviceList = [];
   GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   int notificationCount = 0;
 
@@ -38,9 +37,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void loadCustomerInfo() async {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context, listen: false);
     String? token = thingsBoardService.getToken();
-    String? idCustomer = await thingsBoardService.tbSecureStorage.getItem("id_customer");
+    String? idCustomer =
+        await thingsBoardService.tbSecureStorage.getItem("id_customer");
 
     if (idCustomer != null && token != null) {
       CustomerInfo.idCustomer = idCustomer;
@@ -53,14 +54,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService =Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
-    String? id_customer = CustomerInfo.idCustomer;
-    if(id_customer!=null){
-      firebaseApi.subscribeCustomerIdTopic(id_customer);
-      print("Cadastrado no topico com sucesso $id_customer");
-    }
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -94,30 +91,33 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Colors.white,
           ),
           Icon(Icons.logout_outlined, color: Colors.white),
-          Icon(Icons.notifications,color: Colors.white),
+          Icon(Icons.notifications, color: Colors.white),
           //badges.Badge(
-           // badgeContent: Text(
-             // notificationCount.toString(),
-             // style: TextStyle(color: Colors.white),
-            //),
-            //child: Icon(
-            //  Icons.notifications,
-             // color: Colors.white,
-            //),
-         //),
+          // badgeContent: Text(
+          // notificationCount.toString(),
+          // style: TextStyle(color: Colors.white),
+          //),
+          //child: Icon(
+          //  Icons.notifications,
+          // color: Colors.white,
+          //),
+          //),
         ],
         onTap: (index) {
           if (index == 0) {
-           // updateNotificationCount();
+            // updateNotificationCount();
           }
           if (index == 2) {
             thingsBoardService.tbSecureStorage.deleteItem("login");
             thingsBoardService.tbSecureStorage.deleteItem("senha");
             thingsBoardService.tbSecureStorage.deleteItem("id_customer");
             thingsBoardService.tbSecureStorage.deleteItem("telefone");
+            thingsBoardService.tbSecureStorage.deleteItem("telefone1");
+            thingsBoardService.tbSecureStorage.deleteItem("telefone2");
             thingsBoardService.tbSecureStorage.deleteItem("email");
             thingsBoardService.tbSecureStorage.deleteItem("nome");
-            firebaseApi.unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
+            firebaseApi
+                .unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
             channel.sink.close();
             // Sair para a tela de login
             Navigator.pushReplacement(
@@ -159,160 +159,176 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildDeviceItem(
-  Map<String, String> device, ThingsBoardService thingsBoardService) {
-  String? data = device['data'];
-  String? cor = device['color'];
+      Map<String, String> device, ThingsBoardService thingsBoardService) {
+    String? data = device['data'];
+    String? cor = device['color'];
 
-  // Definindo uma cor padrão
-  Color color = Colors.green;
-  IconData icon = Icons.check_circle; // Ícone padrão para indicar energia disponível
+    // Definindo uma cor padrão
+    Color color = Colors.green;
+    IconData icon =
+        Icons.check_circle; // Ícone padrão para indicar energia disponível
 
-  // Verificando se a cor é nula ou não
-  if (cor != null) {
-    // Convertendo para minúsculo e removendo espaços em branco
-    cor = cor.toLowerCase().trim();
+    // Verificando se a cor é nula ou não
+    if (cor != null) {
+      // Convertendo para minúsculo e removendo espaços em branco
+      cor = cor.toLowerCase().trim();
 
-    // Verificando se a cor é 'verde' ou 'vermelho'
-    if (cor == "verde") {
-      color = Colors.green;
-      icon = Icons.check_circle; // Ícone para energia disponível
-    } else if (cor == "vermelho") {
-      color = Colors.red;
-      icon = Icons.error; // Ícone para falta de energia
-    }
-  }
-
-  return Padding(
-    padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
-    child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: Offset(0, 3), // Altera a posição da sombra
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: color,
-          size: 43.0,
-
-        ),
-        
-        title: Text(device['name'] ?? ''), // Exemplo de texto do dispositivo
-        subtitle: Column(
-          
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(device['description'] ?? ''), // Descrição do dispositivo
-            Text("Criado em: $data"), // Data de criação do dispositivo formatada
-            SizedBox(height: 10), // Espaço entre os textos e os ícones
-            
-          ],
-        ),
-
-        trailing: Container(
-          alignment: Alignment.centerRight, // Alinha o conteúdo à direita
-          width: 30, // Largura do container
-          child: PopupMenuButton<String>(
-            icon: Icon(Icons.more_horiz),
-            onSelected: (String value) {
-              if (value == 'editar') {
-                _showAddDeviceDialogEdit(
-                    context, thingsBoardService, device);
-              } else if (value == 'deletar') {
-                _deleteDevice(device, thingsBoardService);
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'editar',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit),
-                    SizedBox(width: 8),
-                    Text('Editar'),
-                  ],
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'deletar',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete),
-                    SizedBox(width: 8),
-                    Text('Deletar'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => InfoScreen(device: device),
-            ),
-          );
-        },
-      ),
-    ),
-  );
-}
-
-  void leitura() {
-  channel.stream.listen((message) {
-    
-    print("Message is received: $message");
-    var jsonResponse = jsonDecode(message);
-    var subscriptionId = jsonResponse['subscriptionId'];
-    
-    String serial = subscriptionId.toString();
-
-    // Iterar sobre a lista de dispositivos para encontrar o dispositivo correspondente
-    for (var device in _deviceList) {
-      var deviceSerial = device['serial'];
-      print(deviceSerial);
-      print(serial);
-      if (deviceSerial == serial) {
-        var data = jsonResponse['data'];
-        if (data != null && data.containsKey('energia')) {
-          var energiaData = data['energia'][0][1];
-          print('Energia Data: $energiaData');
-      
-          if (energiaData.trim() == "true" && device['color'] != "vermelho") {
-            setState(() {
-              device['color'] = "vermelho";
-              print("Cor atualizada para vermelho");
-            }); 
-          } else if (energiaData == "false" && device['color'] != "verde") {
-            setState(() {
-              device['color'] = "verde";
-              print("Cor atualizada para verde");
-            }); // Atualizar para verde
-          }
-         
-          break;
-        
-        } else {
-          print("Não conem a chave energia");
-        }
+      // Verificando se a cor é 'verde' ou 'vermelho'
+      if (cor == "verde") {
+        color = Colors.green;
+        icon = Icons.check_circle; // Ícone para energia disponível
+      } else if (cor == "vermelho") {
+        color = Colors.red;
+        icon = Icons.error; // Ícone para falta de energia
       }
     }
-    print("Saiu do for");
-  });
-  
-}
 
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3), // Altera a posição da sombra
+            ),
+          ],
+        ),
+        child: ListTile(
+          leading: Icon(
+            icon,
+            color: color,
+            size: 50,
+          ),
+
+          title: Text(device['name'] ?? ''), // Exemplo de texto do dispositivo
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(device['description'] ?? ''), // Descrição do dispositivo
+              Text(
+                  "Criado em: $data"), // Data de criação do dispositivo formatada
+              SizedBox(height: 10), // Espaço entre os textos e os ícones
+            ],
+          ),
+
+          trailing: Container(
+            alignment: Alignment.centerRight, // Alinha o conteúdo à direita
+            width: 30, // Largura do container
+            child: PopupMenuButton<String>(
+              icon: Icon(Icons.more_horiz),
+              onSelected: (String value) {
+                if (value == 'editar') {
+                  _showAddDeviceDialogEdit(context, thingsBoardService, device);
+                } else if (value == 'deletar') {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text("Deletar"),
+                        content: Text("Deseja deletar este dispositivo?"),
+                        actions: [
+                          TextButton(
+                            child: Text("Cancelar"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text("Confirmar"),
+                            onPressed: () {
+                              _deleteDevice(device, thingsBoardService);
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'editar',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit),
+                      SizedBox(width: 8),
+                      Text('Editar'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  value: 'deletar',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete),
+                      SizedBox(width: 8),
+                      Text('Deletar'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InfoScreen(device: device),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void leitura() {
+    channel.stream.listen((message) {
+      print("Message is received: $message");
+      var jsonResponse = jsonDecode(message);
+      var subscriptionId = jsonResponse['subscriptionId'];
+
+      String serial = subscriptionId.toString();
+
+      // Iterar sobre a lista de dispositivos para encontrar o dispositivo correspondente
+      for (var device in _deviceList) {
+        var deviceSerial = device['serial'];
+        print(deviceSerial);
+        print(serial);
+        if (deviceSerial == serial) {
+          var data = jsonResponse['data'];
+          if (data != null && data.containsKey('energia')) {
+            var energiaData = data['energia'][0][1];
+            print('Energia Data: $energiaData');
+
+            if (energiaData.trim() == "true" && device['color'] != "vermelho") {
+              setState(() {
+                device['color'] = "vermelho";
+                print("Cor atualizada para vermelho");
+              });
+            } else if (energiaData == "false" && device['color'] != "verde") {
+              setState(() {
+                device['color'] = "verde";
+                print("Cor atualizada para verde");
+              }); // Atualizar para verde
+            }
+
+            break;
+          } else {
+            print("Não conem a chave energia");
+          }
+        }
+      }
+      print("Saiu do for");
+    });
+  }
 
   void _deleteDevice(
       Map<String, String> device, ThingsBoardService thingsBoardService) {
@@ -322,23 +338,16 @@ class _DashboardPageState extends State<DashboardPage> {
 
     thingsBoardService.tbClient.getDeviceService().deleteDevice(device['id']!);
   }
-
-  void _editDevice(Map<String, String> device) {
-    // Implemente a lógica para editar o dispositivo
-  }
+  
   String _formatDate(DateTime date) {
     // Método para formatar a data
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
-  void _showAddDeviceDialogEdit(BuildContext context,
-      ThingsBoardService thingsBoardService, Map<String, String> device) {
-    TextEditingController _nameController =
-        TextEditingController(text: device['name']);
-    TextEditingController _descriptionController =
-        TextEditingController(text: device['description']);
-    TextEditingController _serialController =
-        TextEditingController(text: device['serial']);
+  void _showAddDeviceDialogEdit(BuildContext context,ThingsBoardService thingsBoardService, Map<String, String> device) {
+    TextEditingController _nameController = TextEditingController(text: device['name']);
+    TextEditingController _descriptionController = TextEditingController(text: device['description']);
+    TextEditingController _serialController = TextEditingController(text: device['serial']);
     String id_device = device['id']!;
     String data = device['data']!;
     showDialog(
@@ -436,12 +445,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _showAddDeviceDialog(
       BuildContext context, ThingsBoardService thingsBoardService) {
-    String _newDeviceName =
-        ''; // Variável para armazenar o nome do novo dispositivo
-    String _newDeviceDescription =
-        ''; // Variável para armazenar a descrição do novo dispositivo // Variável para armazenar o MAC do novo dispositivo
-    String _newDeviceSerial =
-        ''; // Variável para armazenar o Serial Key do novo dispositivo
+    String _newDeviceName = ''; // Variável para armazenar o nome do novo dispositivo
+    String _newDeviceDescription = ''; // Variável para armazenar a descrição do novo dispositivo 
+    String _newDeviceSerial = ''; // Variável para armazenar o Serial Key do novo dispositivo
 
     showDialog(
       context: context,
@@ -496,9 +502,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (_newDeviceName.isNotEmpty &&
                     _newDeviceDescription.isNotEmpty &&
                     _newDeviceSerial.isNotEmpty) {
-                  String deviceNameWithSerial = '$_newDeviceName - $_newDeviceSerial';
+                  String deviceNameWithSerial =
+                      '$_newDeviceName - $_newDeviceSerial';
                   String data = _formatDate(DateTime.now());
-                  bool valorr = await thingsBoardService.verificar_serialKey(_newDeviceSerial.toLowerCase());
+                  bool valorr = await thingsBoardService
+                      .verificar_serialKey(_newDeviceSerial.toLowerCase());
                   if (!valorr) {
                     String deviceId = await thingsBoardService.adicionarDevice(
                         deviceNameWithSerial,
@@ -515,7 +523,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         'color': "verde",
                       });
                     });
-                    subscribeDivece(deviceId,_newDeviceSerial);
+                    subscribeDivece(deviceId, _newDeviceSerial);
                     Navigator.of(context).pop();
                   } else {
                     showDialog(
@@ -593,7 +601,7 @@ class _DashboardPageState extends State<DashboardPage> {
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
     var url = Uri.parse(
-        'https://thingsboard.cloud:443/api/customer/$id_customer/devices?pageSize=20&page=0');
+        'https://thingsboard.cloud:443/api/customer/$id_customer/devices?pageSize=100&page=0');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',
@@ -610,7 +618,6 @@ class _DashboardPageState extends State<DashboardPage> {
         var data = device['additionalInfo']['data'];
         String novoNome = name.split("-")[0];
         setState(() {
-          // se eu criar o device pelo site  sem passar mac, serialKey, vai dar error aqui, pq vai passar ocmo null por isso que deve-se ser criado pelo app que n da erro
           _deviceList.add({
             'name': novoNome,
             'description': description,
@@ -628,49 +635,22 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  void adicionarDeviceForaDoDialog() {
-    // metodo pra adicionar na lista os que já existem
-    String newName = 'filipe';
-    String newDescription = 'hahahaha';
-    String newSerial = '1291313';
+  void subscribeDivece(String id, String serial) {
+    channel.sink.add(jsonEncode({
+      "authCmd": {
+        "cmdId": 0,
+        "token": Config.token,
+      },
+      "cmds": [
+        {
+          "entityType": "DEVICE",
+          "entityId": id,
+          "scope": "LATEST_TELEMETRY",
+          "cmdId": serial,
+          "type": "TIMESERIES",
+        }
+      ]
+    }));
+  }
 
-    setState(() {
-      _deviceList.add({
-        'name': newName,
-        'description': newDescription,
-        'serial': newSerial,
-      });
-    });
-  }
-   
-  void subscribeDivece(String id, String serial){
-     channel.sink.add(jsonEncode({
-        "authCmd": {
-          "cmdId": 0,
-          "token": Config.token,
-        },
-        "cmds": [
-          {
-            "entityType": "DEVICE",
-            "entityId": id,
-            "scope": "LATEST_TELEMETRY",
-            "cmdId": serial,
-            "type": "TIMESERIES",
-          }
-        ]
-      }));
-  }
-  // Função para atualizar a lista de dispositivos
-  void updateDeviceList(List<dynamic> dispositivos) {
-    setState(() {
-      // Limpa a lista atual de dispositivos
-      _deviceList.clear();
-      // Adiciona os dispositivos recebidos à lista
-      for (var dispositivo in dispositivos) {
-        final name = dispositivo['name'];
-        final label = dispositivo['label'];
-        _deviceList.add({'name': name, 'description': label, 'serial': 'dude'});
-      }
-    });
-  }
 }

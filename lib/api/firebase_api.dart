@@ -4,7 +4,6 @@ import 'package:smartenergy_app/services/notification_service.dart';
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   AppCore.soundManager.playSong();
-  print("Foi chamado ao ser clicado handleBackgroundMessage");
 }
 
 class FirebaseApi {
@@ -20,7 +19,6 @@ class FirebaseApi {
 
     initPushNotifications(token!);
     notificationService.initNotification();
-   
   }
 
   Future<void> subscribeCustomerIdTopic(String topic) async {
@@ -29,9 +27,8 @@ class FirebaseApi {
 
   Future<void> unsubscribeFromTopic(String topic) async {
     await _firebaseMessaging.unsubscribeFromTopic(topic);
-    print("Foi executado o unsubiscribe do customer $topic");
-
   }
+
   void handleMessage(RemoteMessage? message) {
     if (message == null) return;
   }
@@ -45,9 +42,9 @@ class FirebaseApi {
       final notification = message.notification;
       final notificationTitle = notification!.title;
       final notificationBody = notification.body;
-      notificationService.showNotification(title: notificationTitle, body: notificationBody);
+      notificationService.showNotification(
+          title: notificationTitle, body: notificationBody);
       AppCore.soundManager.playSong();
-       print("Foi chamado ao ser clicado onMessage");
     });
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
+import 'package:smartenergy_app/api/firebase_api.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
 import 'package:smartenergy_app/screens/recuperarsenha/recuperarsenha.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
@@ -19,9 +20,11 @@ class _Login2State extends State<Login2> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     Config.token = thingsBoardService.getToken()!;
-    
+    FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
+
     return Scaffold(
       backgroundColor: Color(0xFFEEEEEE),
       body: Stack(
@@ -92,7 +95,7 @@ class _Login2State extends State<Login2> {
                             ),
                             onPressed: () {
                               setState(() {
-                                _obscureText = !_obscureText; 
+                                _obscureText = !_obscureText;
                               });
                             },
                           ),
@@ -157,14 +160,27 @@ class _Login2State extends State<Login2> {
                                 var telefone = customer['phone'];
                                 var email = customer['email'];
                                 var nome = customer['title'];
+                                var telefone1 = customer['additionalInfo']['telefone1'];
+                                var telefone2 = customer['additionalInfo']['telefone2'];
                                 CustomerInfo.idCustomer = user;
-                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
-                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
-                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
-                                thingsBoardService.tbSecureStorage.setItem("telefone", telefone);
-                                thingsBoardService.tbSecureStorage.setItem("email", email);
-                                thingsBoardService.tbSecureStorage.setItem("nome", nome);
-
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("login", _usernameController.text);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("senha", _passwordController.text);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("id_customer", user);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("telefone", telefone);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("telefone1", telefone1);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("telefone2", telefone2);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("email", email);
+                                thingsBoardService.tbSecureStorage
+                                    .setItem("nome", nome);
+                                firebaseApi.subscribeCustomerIdTopic(user);
+                                print("USER $user");
                                 Navigator.pushNamed(context, '/profile');
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
