@@ -20,7 +20,8 @@ class _InfoScreenState extends State<InfoScreen> {
   String energia = "";
   String numero = "";
   String saldo = "";
-  bool isLoading = true; // Adicione uma variável para controlar o estado de carregamento
+  bool isLoading =
+      true; // Adicione uma variável para controlar o estado de carregamento
 
   @override
   void initState() {
@@ -33,71 +34,107 @@ class _InfoScreenState extends State<InfoScreen> {
   void dispose() {
     channel2.sink.close();
     super.dispose();
-}
+  }
 
-void leitura() {
-  channel2.stream.listen((message) {
-  
-    var jsonResponse = jsonDecode(message);
-    var data = jsonResponse['data'];
+  void leitura() {
+    channel2.stream.listen((message) {
+      var jsonResponse = jsonDecode(message);
+      var data = jsonResponse['data'];
+      print("Dados do canal 2 $data");
 
-    if (data.isEmpty) {
-      print("entrou no vazio");
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } else if (data != null) {
-      if(data.containsKey('energia')){ // para testar a merda
-        var energiaData = data['energia'][0][1];
-
-        if(energiaData == "true"){
-          print("Energia true no infoscrenn");
-            setState(() {
-              energia = "Energia OFF";
-            });
-        }
-        else{
+      if (data.isEmpty) {
+        if (mounted) {
           setState(() {
-              print("Energia false no infoscrenn");
-             energia = "Energia ON";
+            isLoading = false;
           });
-         
         }
-      }
-      if (data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')) {
-        var energiaData = data['energia'][0][1];
-        if(energiaData == "true"){
-            energiaData = "Energia OFF";
-        }
-        else{
-          energiaData = "Energia ON";
-        }
-        var saldo_dv = data['saldo'][0][1];
-        var numero_dv = data['numero'][0][1];
+      } else if (data != null) {
+        
+        if(data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')){
+          print("Contem as 3 chaves");
+          var energiaData = data['energia'][0][1];
+          var saldo_dv = data['saldo'][0][1];
+          var numero_dv = data['numero'][0][1];
 
-        if (energia != energiaData || saldo != saldo_dv || numero != numero_dv) {
-          if (mounted) {
+          if(energiaData == "true"){
+            energiaData =  "Energia OFF";
+          }
+          else{
+            energiaData =  "Energia ON";
+          }
+
+          if(energia != energiaData || saldo !=saldo_dv || numero != numero_dv){
+
+            if(mounted){
+              setState(() {
+                energia  = energiaData;
+                saldo = saldo_dv;
+                numero = numero_dv;
+                isLoading = false;
+              });
+            }
+          }
+          else{
+            print("Os dados continuam os mesmos, sem atualizações por enquanto!");
+          }
+
+        }
+
+        if(data.containsKey('energia')){
+          var energiaData = data['energia'][0][1];
+          
+          if(energiaData == "true"){
+            energiaData =  "Energia OFF";
+          }
+          else{
+            energiaData =  "Energia ON";
+          }
+
+          if(energia != energiaData){
             setState(() {
               energia = energiaData;
-              saldo = saldo_dv;
-              numero = numero_dv;
-              isLoading = false;
             });
           }
-        } else {
-          print("Dados são os mesmos, não atualiza UI.");
+          else{
+            print("A energia continua a mesma coisa, não atualizo a tela");
+          }
         }
+
+        if(data.containsKey('saldo')){
+          var saldo_dv = data['saldo'][0][1];
+
+          if(saldo != saldo_dv){
+            setState(() {
+              saldo = saldo_dv;
+            });
+          }
+          else{
+            print("O saldo continua o mesmo, sem mudanças por enquanto!");
+          }
+        }
+
+        if(data.containsKey('numero')){
+          var numero_dv = data['numero'][0][1];
+          if(numero != numero_dv){
+            setState(() {
+              numero = numero_dv;
+            });
+
+          }
+          else{
+            print("O número permanece o mesmo, sem mudanças na tela");
+          }
+
+        }
+ 
+      } else {
+        print("Dados não são válidos.");
       }
-    } else {
-      print("Dados não são válidos.");
-    }
-  });
-}
+    });
+  }
 
   void adicionarDevice() {
-    print("Foi chamado");
+    
     String id_device = widget.device['id']!;
     String serial = widget.device['serial']!;
     channel2.sink.add(jsonEncode({
@@ -115,15 +152,6 @@ void leitura() {
         }
       ]
     }));
-  }
-
-  void exibirDeviceInfo() {
-    String id_device = widget.device['id']!;
-    String data = widget.device['data']!;
-    String nome = widget.device['name']!;
-    print(id_device);
-    print(data);
-    print(nome);
   }
 
   @override
@@ -217,7 +245,8 @@ void leitura() {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DeviceAlarme(device_id: widget.device['id']!),
+                                      builder: (context) => DeviceAlarme(
+                                          device_id: widget.device['id']!),
                                     ),
                                   );
                                 },

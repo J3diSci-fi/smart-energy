@@ -1,21 +1,59 @@
 {
   "project_info": {
-    "project_number": "98609120228",
-    "project_id": "smartenergy-888e4",
-    "storage_bucket": "smartenergy-888e4.appspot.com"
+    "project_number": "784856083124",
+    "project_id": "smartrural-25835",
+    "storage_bucket": "smartrural-25835.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:98609120228:android:81ea4c982dc023bc06bdf1",
+        "mobilesdk_app_id": "1:784856083124:android:9c341f0178dbd78ac505e1",
         "android_client_info": {
-          "package_name": "com.example.smartenergy_app"
+          "package_name": "br.com.smartrural.smartenergy.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCxEcUDlhLkjcrHsNJDU7UsYJrsk0ElYmU"
+          "current_key": "AIzaSyDEQs74OgYfMAJ_o0ZxZXiCAyDBrCUizXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784856083124:android:74b90632244a7ae9c505e1",
+        "android_client_info": {
+          "package_name": "com.smartrural.aquatic.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEQs74OgYfMAJ_o0ZxZXiCAyDBrCUizXU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:784856083124:android:b3fbaf43c3c45d56c505e1",
+        "android_client_info": {
+          "package_name": "com.smartrural.smartfeed.v1.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEQs74OgYfMAJ_o0ZxZXiCAyDBrCUizXU"
         }
       ],
       "services": {

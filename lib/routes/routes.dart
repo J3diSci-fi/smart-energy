@@ -9,21 +9,19 @@ class Routes {
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => Login2());
-        
+
       case '/profile':
         return MaterialPageRoute(builder: (_) => DashboardPage());
 
       case '/configs':
         return MaterialPageRoute(builder: (_) => ConfigPage());
-        
+
       case '/notificacoes':
         return MaterialPageRoute(builder: (_) => NotificationView());
-      
+
       default:
         return MaterialPageRoute(
-            builder: (_) => Scaffold(
-                  body: Center(child: Text('Rota não encontrada')),
-                ));
+            builder: (_) => Scaffold(body: Center(child: Text('Rota não encontrada')),));
     }
   }
 }

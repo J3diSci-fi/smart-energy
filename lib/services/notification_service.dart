@@ -1,10 +1,12 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-class NotificationService {
 
-  final FlutterLocalNotificationsPlugin notificationsPlugin = FlutterLocalNotificationsPlugin();
+class NotificationService {
+  final FlutterLocalNotificationsPlugin notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initNotification() async {
-    AndroidInitializationSettings initializationSettingsAndroid =const AndroidInitializationSettings('logomaior');
+    AndroidInitializationSettings initializationSettingsAndroid =
+        const AndroidInitializationSettings('logomaior');
 
     var initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: true,
@@ -29,7 +31,6 @@ class NotificationService {
 
   Future showNotification(
       {int id = 0, String? title, String? body, String? payLoad}) async {
-    return notificationsPlugin.show(
-        id, title, body, await notificationDetails());
+    return notificationsPlugin.show(id, title, body, await notificationDetails());
   }
 }

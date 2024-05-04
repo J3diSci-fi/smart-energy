@@ -8,21 +8,23 @@ import 'package:smartenergy_app/routes/routes.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   ThingsBoardService thingsBoardService = ThingsBoardService();
   await thingsBoardService.isLoggedIn();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,); 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   FirebaseApi firebaseApi = FirebaseApi();
   await firebaseApi.initNotifications();
- 
+
   runApp(
     MultiProvider(
       providers: [
         Provider<ThingsBoardService>.value(value: thingsBoardService),
-        Provider<FirebaseApi>.value(value: firebaseApi), // Fornecer a instância de FirebaseApi
+        Provider<FirebaseApi>.value(
+            value: firebaseApi), // Fornecer a instância de FirebaseApi
       ],
       child: MyApp(),
     ),
@@ -39,5 +41,4 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: Routes.generateRoute,
     );
   }
-
 }
