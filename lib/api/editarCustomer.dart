@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
