@@ -308,15 +308,15 @@ class _DashboardPageState extends State<DashboardPage> {
             var energiaData = data['energia'][0][1];
             print('Energia Data: $energiaData');
 
-            if (energiaData.trim() == "true" && device['color'] != "vermelho") {
-              setState(() {
-                device['color'] = "vermelho";
-                print("Cor atualizada para vermelho");
-              });
-            } else if (energiaData == "false" && device['color'] != "verde") {
+            if (energiaData.trim() == "true" && device['color'] != "verde") {
               setState(() {
                 device['color'] = "verde";
                 print("Cor atualizada para verde");
+              });
+            } else if (energiaData == "false" && device['color'] != "vermelho") {
+              setState(() {
+                device['color'] = "vermelho";
+                print("Cor atualizada para vermelho");
               }); // Atualizar para verde
             }
 

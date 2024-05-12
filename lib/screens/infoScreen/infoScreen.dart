@@ -57,10 +57,10 @@ class _InfoScreenState extends State<InfoScreen> {
           var numero_dv = data['numero'][0][1];
 
           if(energiaData == "true"){
-            energiaData =  "Energia OFF";
+            energiaData =  "Energia ON";
           }
           else{
-            energiaData =  "Energia ON";
+            energiaData =  "Energia OFF";
           }
 
           if(energia != energiaData || saldo !=saldo_dv || numero != numero_dv){
@@ -84,10 +84,10 @@ class _InfoScreenState extends State<InfoScreen> {
           var energiaData = data['energia'][0][1];
           
           if(energiaData == "true"){
-            energiaData =  "Energia OFF";
+            energiaData =  "Energia ON";
           }
           else{
-            energiaData =  "Energia ON";
+            energiaData =  "Energia OFF";
           }
 
           if(energia != energiaData){
