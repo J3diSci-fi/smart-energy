@@ -15,7 +15,6 @@ class FirebaseApi {
     await _firebaseMessaging.requestPermission();
     _firebaseMessaging.setForegroundNotificationPresentationOptions();
     final token = await _firebaseMessaging.getToken();
-    print('FCM Token: ${token}');
 
     initPushNotifications(token!);
     notificationService.initNotification();

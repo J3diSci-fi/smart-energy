@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
+import 'package:smartenergy_app/api/aws_api.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 
-
-  Future<bool>  adicionarTelefone1(String telefone1) async {
+Future<bool> adicionarTelefone1(String telefone1, String id_owner,
+    String verificar, List<Map<String, String>> deviceList) async {
   String url = 'https://thingsboard.cloud:443/api/customer';
   String token = Config.token;
-  String tenantId = "b2a57df0-04d5-11ef-ac64-c1f214c97728";
+  String tenantId = id_owner;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -25,7 +26,7 @@ import 'package:smartenergy_app/services/Customer_info.dart';
   Map<String, String> headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Authorization':'Bearer $token',
+    'X-Authorization': 'Bearer $token',
   };
 
   login = customer['title'];
@@ -38,58 +39,70 @@ import 'package:smartenergy_app/services/Customer_info.dart';
   endereco = customer["address"];
   telefone = customer["phone"];
   telefone2 = customer['additionalInfo']['telefone2'];
-  if(telefone1.trim() == telefone2 || telefone1.trim() == telefone){
-    return false;
+  if (telefone1.trim() == telefone2 || telefone1.trim() == telefone) {
+    if(telefone1!=""){
+       return false;
+    }
+   
   }
-  
 
   Map<String, dynamic> body = {
-    "id": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
+    "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
-    "tenantId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
-    "customerId": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
-    "ownerId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
+    "tenantId": {"id": tenantId, "entityType": "TENANT"},
+    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
-    "city":  cidade,
+    "city": cidade,
     "address": endereco,
     "address2": complemento,
     "zip": cep,
     "phone": telefone,
     "email": email,
-    "name": login,
     "additionalInfo": {
-    "password": senha, "telefone1": telefone1, "telefone2":telefone2 
-    },
+      "description": telefone1 + "," + telefone2,
+      "password": senha,
+      "telefone1": telefone1,
+      "telefone2": telefone2
+    }
   };
 
   String jsonBody = jsonEncode(body);
 
-  http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+  http.Response response =
+      await http.post(Uri.parse(url), headers: headers, body: jsonBody);
 
   print('Response status: ${response.statusCode}');
   print('Response body: ${response.body}');
+  var telefones = telefone + "," + telefone1 + "," + telefone2;
+
+  if (deviceList.isNotEmpty) {
+    if (verificar == "adicionar") {
+      for (final device in deviceList) {
+        final String serial = device['serial'].toString();
+        await salvar_telefones_aws(serial, telefones);
+      }
+    } else {
+      for (final device in deviceList) {
+        final String serial = device['serial'].toString();
+        await salvar_telefones_aws(serial, telefones);
+      }
+    }
+  }
+  else{
+     print("Sem devices criados!");
+  }
 
   return true;
-  
 }
-Future<bool> adicionarTelefone2(String telefone2) async {
+
+Future<bool> adicionarTelefone2(String telefone2, String id_owner,String verificar, List<Map<String, String>> deviceList) async {
   String url = 'https://thingsboard.cloud:443/api/customer';
   String token = Config.token;
   //var tbClient;
-  String tenantId = "b2a57df0-04d5-11ef-ac64-c1f214c97728";
+  String tenantId = id_owner;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -106,7 +119,7 @@ Future<bool> adicionarTelefone2(String telefone2) async {
   Map<String, String> headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Authorization':'Bearer $token',
+    'X-Authorization': 'Bearer $token',
   };
 
   login = customer['title'];
@@ -119,56 +132,68 @@ Future<bool> adicionarTelefone2(String telefone2) async {
   endereco = customer["address"];
   telefone = customer["phone"];
   telefone1 = customer['additionalInfo']['telefone1'];
-  if(telefone2.trim() == telefone1 || telefone2.trim() == telefone){
-    return false;
+  
+  if (telefone2.trim() == telefone1  || telefone2.trim() == telefone) {
+    if(telefone2!=""){
+       return false;
+    }
+   
   }
 
-
   Map<String, dynamic> body = {
-    "id": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
+    "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
-    "tenantId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
-    "customerId": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
-    "ownerId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
+    "tenantId": {"id": tenantId, "entityType": "TENANT"},
+    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
-    "city":  cidade,
+    "city": cidade,
     "address": endereco,
     "address2": complemento,
     "zip": cep,
     "phone": telefone,
     "email": email,
-    "name": login,
     "additionalInfo": {
-    "password": senha, "telefone1": telefone1, "telefone2":telefone2 
-    },
+      "description": telefone1 + "," + telefone2,
+      "password": senha,
+      "telefone1": telefone1,
+      "telefone2": telefone2
+    }
   };
 
   String jsonBody = jsonEncode(body);
   http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
   print('Response status: ${response.statusCode}');
   print('Response body: ${response.body}');
+  
+  var telefones = telefone + "," + telefone1 + "," + telefone2;
+  if (deviceList.isNotEmpty) {
+    if (verificar == "adicionar") {
+      for (final device in deviceList) {
+        final String serial = device['serial'].toString();
+        await salvar_telefones_aws(serial, telefones);
+      }
+    } else {
+      for (final device in deviceList) {
+        final String serial = device['serial'].toString();
+        await salvar_telefones_aws(serial, telefones);
+      }
+    }
+  }
+  else{
+     print("Sem devices criados!");
+  }
 
   return true;
 }
 
 Future<dynamic> getCustomer() async {
   // URL da API e token de autorização
-  String url =
-      'https://thingsboard.cloud/api/customer/a12bc7b0-04d9-11ef-bef7-5131a0fcf1e6';
- 
+  String? customer_id = CustomerInfo.idCustomer;
+  String url = 'https://thingsboard.cloud/api/customer/$customer_id';
+
   String token = Config.token;
   // Cabeçalhos da requisição
   Map<String, String> headers = {
@@ -188,11 +213,12 @@ Future<dynamic> getCustomer() async {
     print('Erro: ${response.statusCode}');
   }
 }
-Future<bool> editarTelefonePrincipa(String telefone3) async {
+
+Future<bool> editarTelefonePrincipa(String telefone3, String id_owner, List<Map<String, String>> deviceList) async {
   String url = 'https://thingsboard.cloud:443/api/customer';
   String token = Config.token;
   //var tbClient;
-  String tenantId = "b2a57df0-04d5-11ef-ac64-c1f214c97728";
+  String tenantId = id_owner;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -210,7 +236,7 @@ Future<bool> editarTelefonePrincipa(String telefone3) async {
   Map<String, String> headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Authorization':'Bearer $token',
+    'X-Authorization': 'Bearer $token',
   };
 
   login = customer['title'];
@@ -224,54 +250,53 @@ Future<bool> editarTelefonePrincipa(String telefone3) async {
   telefone = telefone3;
   telefone1 = customer['additionalInfo']['telefone1'];
   telefone2 = customer['additionalInfo']['telefone2'];
-  
-
 
   Map<String, dynamic> body = {
-    "id": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
+    "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
-    "tenantId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
-    "customerId": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
-    "ownerId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
+    "tenantId": {"id": tenantId, "entityType": "TENANT"},
+    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
-    "city":  cidade,
+    "city": cidade,
     "address": endereco,
     "address2": complemento,
     "zip": cep,
     "phone": telefone,
     "email": email,
-    "name": login,
     "additionalInfo": {
-    "password": senha, "telefone1": telefone1, "telefone2":telefone2 
-    },
+      "description": telefone1 + "," + telefone2,
+      "password": senha,
+      "telefone1": telefone1,
+      "telefone2": telefone2
+    }
   };
 
   String jsonBody = jsonEncode(body);
   http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+  var telefones = telefone + "," + telefone1 + "," + telefone2;
   print('Response status: ${response.statusCode}');
   print('Response body: ${response.body}');
 
+  if (deviceList.isNotEmpty) {
+    for (final device in deviceList) {
+      final String serial = device['serial'].toString();
+      await salvar_telefones_aws(serial, telefones);
+    }
+  }
+  else{
+     print("Sem devices criados!");
+  }
   return true;
 }
 
-Future<bool> editarEmail(String email2) async {
+Future<bool> editarEmail(String email2, String id_owner) async {
   String url = 'https://thingsboard.cloud:443/api/customer';
   String token = Config.token;
- 
-  String tenantId = "b2a57df0-04d5-11ef-ac64-c1f214c97728";
+
+  String tenantId = id_owner;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -284,18 +309,17 @@ Future<bool> editarEmail(String email2) async {
   late String complemento;
   late String telefone1;
   late String telefone2;
-  
-  
+
   dynamic customer = await getCustomer();
   bool result = await verificarEmail(email2);
-  if(result){
+  if (result) {
     return false;
   }
 
   Map<String, String> headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
-    'X-Authorization':'Bearer $token',
+    'X-Authorization': 'Bearer $token',
   };
 
   login = customer['title'];
@@ -306,46 +330,36 @@ Future<bool> editarEmail(String email2) async {
   cidade = customer["city"];
   complemento = customer["address2"];
   endereco = customer["address"];
-  telefone =  customer["phone"];
+  telefone = customer["phone"];
   telefone1 = customer['additionalInfo']['telefone1'];
   telefone2 = customer['additionalInfo']['telefone2'];
-  
-
 
   Map<String, dynamic> body = {
-    "id": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
+    "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
-    "tenantId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
-    "customerId": {
-      "id": customer_id,
-      "entityType": "CUSTOMER"
-    },
-    "ownerId": {
-      "id": tenantId,
-      "entityType": "TENANT"
-    },
+    "tenantId": {"id": tenantId, "entityType": "TENANT"},
+    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
+    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
-    "city":  cidade,
+    "city": cidade,
     "address": endereco,
     "address2": complemento,
     "zip": cep,
     "phone": telefone,
     "email": email,
-    "name": login,
     "additionalInfo": {
-    "password": senha, "telefone1": telefone1, "telefone2":telefone2 
-    },
+      "description": telefone1 + "," + telefone2,
+      "password": senha,
+      "telefone1": telefone1,
+      "telefone2": telefone2
+    }
   };
 
   String jsonBody = jsonEncode(body);
-  http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+  http.Response response =
+      await http.post(Uri.parse(url), headers: headers, body: jsonBody);
   print('Response status: ${response.statusCode}');
   print('Response body: ${response.body}');
 

@@ -1,41 +1,93 @@
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
-const thingsBoardApiEndpoint = 'https://thingsboard.cloud';
-void main(List<String> args) async {
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<void> setOwnerDevice(String id) async {
+  final url = Uri.parse('https://thingsboard.cloud/api/owner/CUSTOMER/9943e910-10be-11ef-bf1e-eb47e687e405/DEVICE/$id');
+  final headers = {
+    'accept': '*/*',
+    'Content-Type': 'application/json',
+    'X-Authorization':'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzbWFydGVuZXJneS4wMzNAZ21haWwuY29tIiwidXNlcklkIjoiYjJhNTdkZjAtMDRkNS0xMWVmLWFjNjQtYzFmMjE0Yzk3NzI4Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiIyM2IxMjNjNS0yNGU1LTQ5ODQtOGJmZS1jMTYwYzczMGFlZjkiLCJpc3MiOiJ0aGluZ3Nib2FyZC5jbG91ZCIsImlhdCI6MTcxNTY4OTQwMCwiZXhwIjoxNzE1NzE4MjAwLCJmaXJzdE5hbWUiOiJTbWFydEVuZXJneSIsImxhc3ROYW1lIjoiU21hcnRFbmVyZ3kiLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsImlzQmlsbGluZ1NlcnZpY2UiOmZhbHNlLCJwcml2YWN5UG9saWN5QWNjZXB0ZWQiOnRydWUsInRlcm1zT2ZVc2VBY2NlcHRlZCI6dHJ1ZSwidGVuYW50SWQiOiJiMTlkZDFmMC0wNGQ1LTExZWYtYWM2NC1jMWYyMTRjOTc3MjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIn0.0mwJuEEINtv0LPW7TyU-iPGJwafGMh1AsTFgENVahd7FscuX7Uh5PXV_dtWA8zCemO8fNkHSZg6Gn81GZowbrw'
+  };
+
   try {
-    // Create instance of ThingsBoard API Client
-    var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
+    final response = await http.post(
+      url,
+      headers: headers,
+    );
 
-    // Perform login with default Tenant Administrator credentials
-    await tbClient.login(LoginRequest('smartenergy.033@gmail.com', 'smartenergy1999'));
-    print(tbClient.getJwtToken());
-    print('isAuthenticated=${tbClient.isAuthenticated()}');
-
-    //Customer? customer = await tbClient.getCustomerService().getCustomer("57a85cc0-e639-11ee-bf71-bd1e2ee8c819");
-   // print(customer?.getEntityType());
-    
-    
-    //Device? device = await tbClient.getDeviceService().getDevice("5d4ca6d0-ee46-11ee-ad30-b74a0679875d");
-    //print(device?.id);
-    //print(device?.additionalInfo);
-    //device?.customerId = customer?.id;
-    //await tbClient.getDeviceService().saveDevice(device!, accessToken: tbClient.getJwtToken());
-    
-    //var device1 = Device("luizinho",'default');
-   // device1.additionalInfo = {'description': 'My test device!'};
-    //EntityId customerId = CustomerId("57a85cc0-e639-11ee-bf71-bd1e2ee8c819");
-    //device1.setOwnerId(customerId);
-    //var savedDevice = await tbClient.getDeviceService().saveDevice(device1);
-    //device1.setOwnerId(customerId);
-   // print(device1.getId());
-    
-
-
-
-    // Finally perform logout to clear credentials
-    //await tbClient.logout();
-  } catch (e, s) {
-    print('Error: $e');
-    print('Stack: $s');
+    if (response.statusCode == 200) {
+      print('Requisição bem-sucedida!');
+    } else {
+      print('Erro ao fazer a requisição. Código de status: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Erro ao realizar a requisição: $e');
   }
+}
+
+Future<String> cadastrarDevice(String nome, String serial_key, String descricao,String data) async {
+  final url = Uri.parse('https://thingsboard.cloud/api/device-with-credentials');
+  final headers = {
+    'accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Authorization': 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzbWFydGVuZXJneS4wMzNAZ21haWwuY29tIiwidXNlcklkIjoiYjJhNTdkZjAtMDRkNS0xMWVmLWFjNjQtYzFmMjE0Yzk3NzI4Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiIyM2IxMjNjNS0yNGU1LTQ5ODQtOGJmZS1jMTYwYzczMGFlZjkiLCJpc3MiOiJ0aGluZ3Nib2FyZC5jbG91ZCIsImlhdCI6MTcxNTY4OTQwMCwiZXhwIjoxNzE1NzE4MjAwLCJmaXJzdE5hbWUiOiJTbWFydEVuZXJneSIsImxhc3ROYW1lIjoiU21hcnRFbmVyZ3kiLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsImlzQmlsbGluZ1NlcnZpY2UiOmZhbHNlLCJwcml2YWN5UG9saWN5QWNjZXB0ZWQiOnRydWUsInRlcm1zT2ZVc2VBY2NlcHRlZCI6dHJ1ZSwidGVuYW50SWQiOiJiMTlkZDFmMC0wNGQ1LTExZWYtYWM2NC1jMWYyMTRjOTc3MjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIn0.0mwJuEEINtv0LPW7TyU-iPGJwafGMh1AsTFgENVahd7FscuX7Uh5PXV_dtWA8zCemO8fNkHSZg6Gn81GZowbrw'
+  };
+  final body = jsonEncode({
+    "device": {
+      "tenantId": {
+        "id": "b2a57df0-04d5-11ef-ac64-c1f214c97728",
+        "entityType": "TENANT"
+      },
+      "ownerId": {
+        "id": "9943e910-10be-11ef-bf1e-eb47e687e405",
+        "entityType": "CUSTOMER"
+      },
+      "name": nome,
+      "type": "default",
+      "label": "SmartEnergy",
+      "deviceData": {
+        "configuration": {"type": "DEFAULT"},
+        "transportConfiguration": {"type": "DEFAULT"}
+      },
+      "firmwareId": null,
+      "softwareId": null,
+      "additionalInfo": {
+        "description": descricao,
+        "serialKey": serial_key,
+        "data": data
+      }
+    },
+    "credentials": {
+      "credentialsType": "MQTT_BASIC",
+      "credentialsValue": "{\"clientId\":\"$serial_key\",\"userName\":\"$serial_key\",\"password\":\"$serial_key\"}"
+    }
+  });
+
+  try {
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      print('Dispositivo cadastrado com sucesso!');
+      final jsondata = json.decode(response.body);
+      String device_id = jsondata["id"]["id"];
+      setOwnerDevice(device_id);
+      return device_id;
+      
+
+    } else {
+      print('Erro ao cadastrar dispositivo. Código de status: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Erro ao realizar a requisição: $e');
+  }
+  return "erro";
+}
+
+void main() {
+  cadastrarDevice("Filipe","55555","fala sério", "29/09/2020");
   
 }

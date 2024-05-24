@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 void main() async {
   String url = 'https://thingsboard.cloud:443/api/device';
-  String token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJub3JpZXRlY2FydmFsaG8xMkBnbWFpbC5jb20iLCJ1c2VySWQiOiJjYmM5OWJkMC1lZjAwLTExZWUtOTBiNy0xMzk5N2FjNzFiN2EiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImI0MTZkNTZlLTZhMjItNDk4MC04MGRiLTc1NjgwN2Q0YWYwNiIsImlzcyI6InRoaW5nc2JvYXJkLmNsb3VkIiwiaWF0IjoxNzEyNDQzNTIwLCJleHAiOjE3MTI0NzIzMjAsImZpcnN0TmFtZSI6Ikx1aXoiLCJsYXN0TmFtZSI6IkNhcnZhbGhvIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJpc0JpbGxpbmdTZXJ2aWNlIjpmYWxzZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJ0ZXJtc09mVXNlQWNjZXB0ZWQiOnRydWUsInRlbmFudElkIjoiY2FhMjBiYzAtZWYwMC0xMWVlLTkwYjctMTM5OTdhYzcxYjdhIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.3Fh7X7WY2nwVEWAD0spGNNbAYFylmRVwV2HnuUnjWQQMKSGRi_svb9MHzgC5MjUuT-hf2EG8gHeb1odYqlvRGQ';
+  String token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzbWFydGVuZXJneS4wMzNAZ21haWwuY29tIiwidXNlcklkIjoiYjJhNTdkZjAtMDRkNS0xMWVmLWFjNjQtYzFmMjE0Yzk3NzI4Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiIyM2IxMjNjNS0yNGU1LTQ5ODQtOGJmZS1jMTYwYzczMGFlZjkiLCJpc3MiOiJ0aGluZ3Nib2FyZC5jbG91ZCIsImlhdCI6MTcxNTY0Mzg1MiwiZXhwIjoxNzE1NjcyNjUyLCJmaXJzdE5hbWUiOiJTbWFydEVuZXJneSIsImxhc3ROYW1lIjoiU21hcnRFbmVyZ3kiLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsImlzQmlsbGluZ1NlcnZpY2UiOmZhbHNlLCJwcml2YWN5UG9saWN5QWNjZXB0ZWQiOnRydWUsInRlcm1zT2ZVc2VBY2NlcHRlZCI6dHJ1ZSwidGVuYW50SWQiOiJiMTlkZDFmMC0wNGQ1LTExZWYtYWM2NC1jMWYyMTRjOTc3MjgiLCJjdXN0b21lcklkIjoiMTM4MTQwMDAtMWRkMi0xMWIyLTgwODAtODA4MDgwODA4MDgwIn0.LYsLGMQKcWZU1CupWMmmoG_BTWQQUUiFxFNL0NCsP2eHH0f-fsevI-QLWBLxrMahFNnRqbzfF9SnW3HZGOGH_w';
 
   Map<String, String> headers = {
     'accept': 'application/json',
@@ -14,19 +14,19 @@ void main() async {
 
   Map<String, dynamic> body = {
     "id": {
-      "id": "3c145760-f3aa-11ee-ae87-79b197dbfe12",
+      "id": "a92ab620-1171-11ef-ac64-c1f214c97728",
       "entityType": "DEVICE"
     },
     "tenantId": {
-      "id": "cbc99bd0-ef00-11ee-90b7-13997ac71b7a",
+      "id": "b2a57df0-04d5-11ef-ac64-c1f214c97728",
       "entityType": "TENANT"
     },
     "customerId": {
-      "id": "737c0f20-ef01-11ee-90b7-13997ac71b7a",
+      "id": "9943e910-10be-11ef-bf1e-eb47e687e405",
       "entityType": "CUSTOMER"
     },
     "ownerId": {
-      "id": "737c0f20-ef01-11ee-90b7-13997ac71b7a",
+      "id": "9943e910-10be-11ef-bf1e-eb47e687e405",
       "entityType": "CUSTOMER"
     },
     "name": "Fazenda da Filipe2",

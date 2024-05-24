@@ -27,14 +27,7 @@ void fetchData() async {
       var createdTime = alarme['createdTime'];
       var details = alarme['details'];
       var status = alarme['status'];
-      var originatorName = alarme['originatorName'];
-
-      // Imprime as informações
-      print('ID do Alarme: $id');
-      print('Data de Criação: $createdTime');
-      print('Detalhes: $details');
-      print('Status: $status');
-      print('Nome do Originador: $originatorName');
+      var originatorName = alarme['originatorName']; 
     }
   } else {
     // Caso ocorra um erro na requisição
