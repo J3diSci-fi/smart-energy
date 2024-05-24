@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 
 class NotificationView extends StatefulWidget {
   @override
@@ -13,22 +15,22 @@ class NotificationView extends StatefulWidget {
 
 class _NotificationViewState extends State<NotificationView> {
   List<Map<String, dynamic>> _alarmes = [];
-
   @override
   void initState() {
-    super.initState();
+    super.initState(); 
     fetchData();
   }
 
   @override
   Widget build(BuildContext context) {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     return Scaffold(
       appBar: appBar(),
-      body: _buildListView(),
+      body: _buildListView(thingsBoardService),
     );
   }
 
-  Widget _buildListView() {
+  Widget _buildListView(ThingsBoardService thingsBoardService) {
     return ListView.builder(
       itemCount: _alarmes.length,
       itemBuilder: (context, index) {
@@ -106,7 +108,8 @@ class _NotificationViewState extends State<NotificationView> {
                           ),
                           TextButton(
                             child: Text("Confirmar"),
-                            onPressed: () {
+                            onPressed: () async {
+                             await thingsBoardService.renewTokenIfNeeded();
                               _confirmarAlarme(alarm);
                               Navigator.of(context).pop();
                             },
@@ -169,6 +172,7 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   void fetchData() async {
+    
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
     var url = Uri.parse(

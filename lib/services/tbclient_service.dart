@@ -12,12 +12,14 @@ class ThingsBoardService {
   TbSecureStorage tbSecureStorage = TbSecureStorage();
   bool _isLoggedIn = false;
 
-  ThingsBoardService() {
-    _login();
+  ThingsBoardService();
+
+  Future<void> initialize() async {
+    await _login();  // Aguarda o login ser concluído
   }
+
   Future<void> _login() async {
-    await tbClient
-        .login(LoginRequest('smartenergy.033@gmail.com', 'smartenergy1999'));
+    await tbClient.login(LoginRequest('testesmartsmart329@gmail.com', 'sistema1999'));
     _isLoggedIn = true;
   }
 
@@ -25,16 +27,25 @@ class ThingsBoardService {
     return _isLoggedIn;
   }
 
-  ThingsboardClient getTbClient() {
-    return tbClient;
-  }
-
   String? getToken() {
     return tbClient.getJwtToken();
   }
 
-  void editarDevice(String nome, String id_device, String descricao,
-      String serial, String data) async {
+  Future<void> renewTokenIfNeeded() async {
+    if (!tbClient.isJwtTokenValid()) {
+        // Se o token de acesso estiver expirado, renovamos usando o refresh token
+        await tbClient.refreshJwtToken();
+        Config.token = getToken()!;
+        
+    }
+    
+}
+  String getIdTenant() {
+    return tbClient.getAuthUser()!.tenantId;
+  }
+
+  void editarDevice(String nome, String id_device, String descricao, String serial, String data) async {
+    await renewTokenIfNeeded();
     String url = 'https://thingsboard.cloud:443/api/device';
     String token = Config.token;
     String tenantId = tbClient.getAuthUser()!.tenantId;
@@ -67,14 +78,14 @@ class ThingsBoardService {
 
     String jsonBody = jsonEncode(body);
 
-    http.Response response =
-        await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+    http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
 
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
   }
 
   Future<bool> verificar_serialKey(String serial) async {
+    await renewTokenIfNeeded();
     final String url = '${Config.apiUrl}/user/devices?pageSize=1000&page=0';
     final Map<String, String> headers = {
       'accept': 'application/json',
@@ -90,7 +101,6 @@ class ThingsBoardService {
 
       // Verifica se a lista de dispositivos está vazia
       if (devices.isEmpty) {
-        print('A lista de dispositivos está vazia.');
         return false;
       }
 
@@ -114,22 +124,65 @@ class ThingsBoardService {
     }
   }
 
-  Future<String> adicionarDevice(
-      String nome, String descricao, String serialKey, String data) async {
-    var device = Device(nome, 'default');
-    device.additionalInfo = {
-      'description': descricao,
-      'serialKey': serialKey,
-      'data': data
+  Future<String> cadastrarDevice(String nome, String descricao, String serial_key, String data) async {
+    await renewTokenIfNeeded();
+    final url = Uri.parse('https://thingsboard.cloud/api/device-with-credentials');
+    String token = Config.token;
+    String tenantId = tbClient.getAuthUser()!.tenantId;
+    String? customer_id = CustomerInfo.idCustomer;
+    final headers = {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-Authorization': 'Bearer $token'
     };
-    String? id = CustomerInfo.idCustomer;
-    print("Printando o id do customer que foi associado ao device:$id");
-    EntityId customerId = CustomerId(id ?? 'default_value');
-    device.setOwnerId(customerId);
-    Device savedDevice = await tbClient.getDeviceService().saveDevice(device);
+    final body = jsonEncode({
+      "device": {
+        "tenantId": {"id": tenantId, "entityType": "TENANT"},
+        "customerId": {
+          "id": customer_id,
+          "entityType": "CUSTOMER"
+        },
+        "ownerId": {"id": customer_id, "entityType": "CUSTOMER"},
+        "name": nome,
+        "type": "default",
+        "label": "SmartEnergy",
+        "deviceData": {
+          "configuration": {"type": "DEFAULT"},
+          "transportConfiguration": {"type": "DEFAULT"}
+        },
+        "additionalInfo": {
+          "description": descricao,
+          "serialKey": serial_key,
+          "data": data
+        }
+      },
+      "credentials": {
+        "credentialsType": "MQTT_BASIC",
+        "credentialsValue":
+            "{\"clientId\":\"$serial_key\",\"userName\":\"$serial_key\",\"password\":\"$serial_key\"}"
+      }
+    });
 
-    // Convertendo o ID do dispositivo para uma string
-    String deviceId = savedDevice.id?.id ?? 'N/A';
-    return deviceId;
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        print('Dispositivo cadastrado com sucesso!');
+        final jsondata = json.decode(response.body);
+        String device_id = jsondata["id"]["id"];
+        //setOwnerDevice(device_id);
+        return device_id;
+      } else {
+        print(
+            'Erro ao cadastrar dispositivo. Código de status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erro ao realizar a requisição: $e');
+    }
+    return "erro";
   }
 }

@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:smartenergy_app/services/Customer_info.dart';
 
-Future<int> criarCustomer({
-  required String login,
-  required String senha,
-  required String email,
-  required String telefone,
-  required String cep,
-  required String estado,
-  required String cidade,
-  required String endereco,
-  required String complemento,
-}) async {
+Future<int> criarCustomer(
+    {required String login,
+    required String senha,
+    required String email,
+    required String telefone,
+    required String cep,
+    required String estado,
+    required String cidade,
+    required String endereco,
+    required String complemento,
+    required String id_owner}) async {
   final url = Uri.parse('${Config.apiUrl}/customer');
 
   final headers = {
@@ -21,26 +22,27 @@ Future<int> criarCustomer({
     'X-Authorization': 'Bearer ${Config.token}',
   };
 
-  final ownerId = {
-    "id": "b2a57df0-04d5-11ef-ac64-c1f214c97728", //id do owner(conta principal)
-    "entityType": "DEVICE"
-  };
+  
 
   final body = json.encode({
     "title": login.toLowerCase(),
-    "ownerId": ownerId,
+    "tenantId": {"id": id_owner, "entityType": "TENANT"},
+    "parentCustomerId": {"id": id_owner, "entityType": "CUSTOMER"},
+    "customerId": {"id": id_owner, "entityType": "CUSTOMER"},
+    "ownerId": id_owner,
     "country": "BR",
     "state": estado,
     "city": cidade,
     "address": endereco,
     "address2": complemento,
     "zip": cep,
-    "phone":"+55"+telefone.replaceAll(RegExp(r'[()\-\s]'), ''),
+    "phone": "+55" + telefone.replaceAll(RegExp(r'[()\-\s]'), ''),
     "email": email.toLowerCase(),
     "additionalInfo": {
+      "description": "",
       "password": senha.toLowerCase(),
-      "telefone1":"",
-      "telefone2":""
+      "telefone1": "",
+      "telefone2": ""
     }
   });
 
@@ -74,7 +76,77 @@ Future<int> criarCustomer({
   return 0;
 }
 
+Future<String> cadastrarDevice(String nome, String serial, String descricao,
+    String tenantId, String data) async {
+  final url =
+      Uri.parse('https://thingsboard.cloud/api/device-with-credentials');
+  String token = Config.token;
+  String? customer_id = CustomerInfo.idCustomer;
 
+  final headers = {
+    'accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Authorization': 'Bearer ${Config.token}',
+  };
+
+  final body = json.encode({
+    "device": {
+      "tenantId": {
+        "id": tenantId, // Utilizando o parâmetro tenantId aqui
+        "entityType": "TENANT"
+      },
+      "ownerId": {"id": customer_id, "entityType": "CUSTOMER"},
+      "name": nome, // Utilizando o parâmetro nome aqui
+      "type": "default",
+      "label": "SmartEnergy", // Utilizando o parâmetro descricao aqui
+      "deviceProfileId": {"id": tenantId, "entityType": "DEVICE_PROFILE"},
+      "deviceData": {
+        "configuration": {"type": "DEFAULT"},
+        "transportConfiguration": {"type": "DEFAULT"}
+      },
+      "firmwareId": null,
+      "softwareId": null,
+      "additionalInfo": {
+        'description': descricao,
+        'serialKey': serial,
+        'data': data
+      }
+    },
+    "credentials": {
+      "credentialsType": "MQTT_BASIC",
+      "credentialsValue":
+          "{\"clientId\":\"$serial\",\"userName\":\"$nome\",\"password\":\"b9xtm4ny8kt9zewaga5o\"}"
+    }
+  });
+  try {
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      print('Usuário cadastrado com sucesso!');
+      return "200";
+    }
+
+    if (response.statusCode == 400) {
+      print('Usuário já cadastrado!');
+      return "400";
+    }
+
+    if (response.statusCode == 403) {
+      print('Usuário já cadastrado!');
+      return "403";
+    } else {
+      print(
+          'Erro ao cadastrar usuário. Código de status: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Erro ao realizar a requisição: $e');
+  }
+  return ''; // Adicionando retorno vazio caso não caia em nenhum dos casos anteriores
+}
 
 Future<dynamic> getAllCustomers() async {
   final String url = '${Config.apiUrl}/customers?pageSize=1000&page=0';
@@ -99,14 +171,13 @@ Future<dynamic> getAllCustomers() async {
 
 // se der erro quando tu digitar um usuario e senha que n existem, é pq tem customer criados manualmente no thingboard sem os parametros [passowrd] aí quando tenta acessar dar erro
 dynamic verifyLoginAndPassword(String login, String senha) async {
-  print("Verificar login e senha foi chamado");
   dynamic jsonData = await getAllCustomers();
   final data = jsonData['data'];
 
   for (var customer in data) {
     final title = customer['title'];
     final password = customer['additionalInfo']['password'];
-    print(password);
+    
     // Verifica se o login e a senha correspondem
     if (title == login.toLowerCase() && password == senha.toLowerCase()) {
       return customer;

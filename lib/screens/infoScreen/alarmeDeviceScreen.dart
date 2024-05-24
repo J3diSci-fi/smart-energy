@@ -3,11 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 
 class DeviceAlarme extends StatefulWidget {
   final String device_id;
+  final ThingsBoardService thingsBoardService;
+  
 
-  DeviceAlarme({required this.device_id});
+  DeviceAlarme({required this.device_id,  required this.thingsBoardService});
   @override
   _DeviceAlarmeState createState() => _DeviceAlarmeState();
 }
@@ -41,8 +44,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
 
         // Definindo uma cor padrão
         Color color = Colors.green;
-        IconData icon =
-            Icons.check_circle; // Ícone padrão para status "CLEARED_ACK"
+        IconData icon = Icons.check_circle; // Ícone padrão para status "CLEARED_ACK"
 
         // Verificando o status do alarme
         if (status == "Confirmado") {
@@ -107,7 +109,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
                           ),
                           TextButton(
                             child: Text("Confirmar"),
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop();
                               _confirmarAlarme(alarm);
                             },
@@ -126,6 +128,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
   }
 
   void confirmar(String id, String token) async {
+    await widget.thingsBoardService.renewTokenIfNeeded();
     var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/ack');
     var headers = {
       'accept': 'application/json',
@@ -142,6 +145,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
   }
 
   void clear(String id, String token) async {
+    await widget.thingsBoardService.renewTokenIfNeeded();
     var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/clear');
     var headers = {
       'accept': 'application/json',
@@ -157,7 +161,8 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
     }
   }
 
-  void _confirmarAlarme(Map<String, dynamic> alarm) {
+  void _confirmarAlarme(Map<String, dynamic> alarm) async {
+    await widget.thingsBoardService.renewTokenIfNeeded();
     String token = Config.token;
     //confirmar
     confirmar(alarm['id'], token);
@@ -170,8 +175,9 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
   }
 
   void fetchData() async {
-    String token = Config.token;
+    await widget.thingsBoardService.renewTokenIfNeeded();
     String id_device = widget.device_id;
+    String token = Config.token;
     var url = Uri.parse(
         'https://thingsboard.cloud/api/alarm/DEVICE/$id_device?pageSize=30&page=0&sortProperty=createdTime&sortOrder=DESC');
     var headers = {

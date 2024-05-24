@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:provider/provider.dart';
+import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/editarCustomer.dart';
+import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ConfigPage extends StatefulWidget {
   @override
@@ -17,11 +21,13 @@ class _ConfigPageState extends State<ConfigPage> {
   String? telefone1;
   String? telefone2;
   bool isLoading = true; // Flag para controle de carregamento
+  List<Map<String, String>> _deviceList = [];
 
   @override
   void initState() {
     super.initState();
     loadData();
+    adicionarDeviceLista();
   }
 
   Future<void> loadData() async {
@@ -52,7 +58,44 @@ class _ConfigPageState extends State<ConfigPage> {
       print('Erro ao carregar dados: $e');
     }
   }
-
+  void adicionarDeviceLista() async {
+    ThingsBoardService thingsBoardService =  Provider.of<ThingsBoardService>(context, listen: false);
+    await thingsBoardService.renewTokenIfNeeded();
+    String? id_customer = CustomerInfo.idCustomer;
+    String token = Config.token;
+    var url = Uri.parse(
+        'https://thingsboard.cloud:443/api/customer/$id_customer/devices?pageSize=100&page=0');
+    var headers = {
+      'accept': 'application/json',
+      'X-Authorization': 'Bearer $token',
+    };
+    var response = await http.get(url, headers: headers);
+    if (response.statusCode == 200) {
+      var jsonResponse = jsonDecode(response.body);
+      var devices = jsonResponse['data'];
+      for (var device in devices) {
+        var name = device['name'];
+        var id = device['id']['id'];
+        var description = device['additionalInfo']['description'];
+        var serialKey = device['additionalInfo']['serialKey'];
+        var data = device['additionalInfo']['data'];
+        String novoNome = name.split("-")[0];
+        setState(() {
+          _deviceList.add({
+            'name': novoNome,
+            'description': description,
+            'serial': serialKey,
+            'id': id,
+            'data': data,
+            'color': "verde",
+          });
+        });
+      }
+      
+    } else {
+      print('Request failed with status: ${response.statusCode}');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -245,7 +288,6 @@ class _ConfigPageState extends State<ConfigPage> {
           IconButton(
             icon: Icon(Icons.edit),
             onPressed: () {
-              print("Que porra é essa");
               showEdittelefonePrincipal(initialValue);
             },
           ),
@@ -344,8 +386,7 @@ class _ConfigPageState extends State<ConfigPage> {
       mask: '+55(00)000000000',
       text: "",
     );
-    final thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
+    final thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -378,8 +419,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 } else {
                   String numero = newValue.replaceAll(RegExp(r'[()]'), '');
-
-                  bool result = await adicionarTelefone1(numero.trim());
+                  await thingsBoardService.renewTokenIfNeeded();
+                  bool result = await adicionarTelefone1(numero.trim(), thingsBoardService.getIdTenant(),"adicionar", _deviceList);
                   if (result) {
                     // Atualize o estado dentro do setState após a lógica assíncrona
                     setState(() {
@@ -447,8 +488,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 } else {
                   String numero = newValue.replaceAll(RegExp(r'[()]'), '');
-
-                  bool result = await adicionarTelefone2(numero.trim());
+                  await thingsBoardService.renewTokenIfNeeded();
+                  bool result = await adicionarTelefone2(numero.trim(),thingsBoardService.getIdTenant(),"adicionar", _deviceList);
                   if (result) {
                     // Atualize o estado dentro do setState após a lógica assíncrona
                     setState(() {
@@ -511,8 +552,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 } else {
                   String email2 = newValue.toLowerCase();
-
-                  bool result = await editarEmail(email2.trim());
+                  await thingsBoardService.renewTokenIfNeeded();
+                  bool result = await editarEmail(email2.trim(), thingsBoardService.getIdTenant());
                   if (result) {
                     // Atualize o estado dentro do setState após a lógica assíncrona
                     setState(() {
@@ -581,8 +622,8 @@ class _ConfigPageState extends State<ConfigPage> {
                   );
                 } else {
                   String numero = newValue.replaceAll(RegExp(r'[()]'), '');
-
-                  bool result = await editarTelefonePrincipa(numero.trim());
+                  thingsBoardService.renewTokenIfNeeded();
+                  bool result = await editarTelefonePrincipa(numero.trim(), thingsBoardService.getIdTenant(), _deviceList);
                   if (result) {
                     // Atualize o estado dentro do setState após a lógica assíncrona
                     setState(() {
@@ -629,15 +670,14 @@ class _ConfigPageState extends State<ConfigPage> {
             ),
             TextButton(
               onPressed: () async {
-                bool result = await adicionarTelefone2("");
+                await thingsBoardService.renewTokenIfNeeded();
+                bool result = await adicionarTelefone2("",thingsBoardService.getIdTenant(),"deletar",_deviceList);
                 if (result) {
                   // Atualize o estado dentro do setState após a lógica assíncrona
                   setState(() {
                     telefone2 = "";
                   });
-                  await thingsBoardService.tbSecureStorage
-                      .setItem("telefone2", "");
-
+                  await thingsBoardService.tbSecureStorage.setItem("telefone2", " ");
                   Navigator.of(context).pop();
                 } else {
                   print("ERRO!");
@@ -669,7 +709,8 @@ class _ConfigPageState extends State<ConfigPage> {
             ),
             TextButton(
               onPressed: () async {
-                bool result = await adicionarTelefone1("");
+                await thingsBoardService.renewTokenIfNeeded();
+                bool result = await adicionarTelefone1("",thingsBoardService.getIdTenant(),"deletar",_deviceList);
                 if (result) {
                   // Atualize o estado dentro do setState após a lógica assíncrona
                   setState(() {

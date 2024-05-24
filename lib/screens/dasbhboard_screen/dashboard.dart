@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/Widget/customerTopBar.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:smartenergy_app/api/aws_api.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
@@ -37,11 +38,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void loadCustomerInfo() async {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
+    ThingsBoardService thingsBoardService =  Provider.of<ThingsBoardService>(context, listen: false);
     String? token = thingsBoardService.getToken();
-    String? idCustomer =
-        await thingsBoardService.tbSecureStorage.getItem("id_customer");
+    String? idCustomer = await thingsBoardService.tbSecureStorage.getItem("id_customer");
 
     if (idCustomer != null && token != null) {
       CustomerInfo.idCustomer = idCustomer;
@@ -54,8 +53,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
 
     return Scaffold(
@@ -103,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
           //),
           //),
         ],
-        onTap: (index) {
+        onTap: (index) async {
           if (index == 0) {
             // updateNotificationCount();
           }
@@ -134,6 +132,7 @@ class _DashboardPageState extends State<DashboardPage> {
             });
           } else if (index == 3) {
             //resetNotificationCount();
+            await thingsBoardService.renewTokenIfNeeded();
             Navigator.pushNamed(context, '/notificacoes').then((result) {
               if (result != null && result is bool && result) {
                 _bottomNavigationKey.currentState
@@ -291,7 +290,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void leitura() {
     channel.stream.listen((message) {
-      print("Message is received: $message");
       var jsonResponse = jsonDecode(message);
       var subscriptionId = jsonResponse['subscriptionId'];
 
@@ -300,23 +298,18 @@ class _DashboardPageState extends State<DashboardPage> {
       // Iterar sobre a lista de dispositivos para encontrar o dispositivo correspondente
       for (var device in _deviceList) {
         var deviceSerial = device['serial'];
-        print(deviceSerial);
-        print(serial);
         if (deviceSerial == serial) {
           var data = jsonResponse['data'];
           if (data != null && data.containsKey('energia')) {
             var energiaData = data['energia'][0][1];
-            print('Energia Data: $energiaData');
 
             if (energiaData.trim() == "true" && device['color'] != "verde") {
               setState(() {
                 device['color'] = "verde";
-                print("Cor atualizada para verde");
               });
             } else if (energiaData == "false" && device['color'] != "vermelho") {
               setState(() {
                 device['color'] = "vermelho";
-                print("Cor atualizada para vermelho");
               }); // Atualizar para verde
             }
 
@@ -326,12 +319,13 @@ class _DashboardPageState extends State<DashboardPage> {
           }
         }
       }
-      print("Saiu do for");
+      
     });
   }
 
-  void _deleteDevice(
-      Map<String, String> device, ThingsBoardService thingsBoardService) {
+  void _deleteDevice(Map<String, String> device, ThingsBoardService thingsBoardService) async{
+    await thingsBoardService.renewTokenIfNeeded();
+    await salvar_telefones_aws(device['serial']!, "");
     setState(() {
       _deviceList.remove(device);
     });
@@ -347,7 +341,8 @@ class _DashboardPageState extends State<DashboardPage> {
   void _showAddDeviceDialogEdit(BuildContext context,ThingsBoardService thingsBoardService, Map<String, String> device) {
     TextEditingController _nameController = TextEditingController(text: device['name']);
     TextEditingController _descriptionController = TextEditingController(text: device['description']);
-    TextEditingController _serialController = TextEditingController(text: device['serial']);
+    String serial = device['serial']!;
+    device['serial'];
     String id_device = device['id']!;
     String data = device['data']!;
     showDialog(
@@ -379,15 +374,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
                 SizedBox(height: 10),
-                TextField(
-                  controller: _serialController,
-                  onChanged: (value) {
-                    // Atualizar o Serial Key do dispositivo conforme o usuário digita
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Serial Key',
-                  ),
-                ),
+
               ],
             ),
           ),
@@ -402,16 +389,14 @@ class _DashboardPageState extends State<DashboardPage> {
               onPressed: () async {
                 String _newDeviceName = _nameController.text;
                 String _newDeviceDescription = _descriptionController.text;
-                String _newDeviceSerial = _serialController.text;
-                if (_newDeviceName.isNotEmpty &&
-                    _newDeviceDescription.isNotEmpty &&
-                    _newDeviceSerial.isNotEmpty) {
-                  thingsBoardService.editarDevice(_newDeviceName, id_device,
-                      _newDeviceDescription, _newDeviceSerial, data);
+                
+                if (_newDeviceName.isNotEmpty && _newDeviceDescription.isNotEmpty) {
+                  
+                  String deviceNameWithSerial = '$_newDeviceName - $serial';
+                  thingsBoardService.editarDevice(deviceNameWithSerial, id_device, _newDeviceDescription, serial!, data);
                   setState(() {
                     device['name'] = _newDeviceName;
                     device['description'] = _newDeviceDescription;
-                    device['serial'] = _newDeviceSerial;
                   });
 
                   Navigator.of(context).pop();
@@ -502,13 +487,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (_newDeviceName.isNotEmpty &&
                     _newDeviceDescription.isNotEmpty &&
                     _newDeviceSerial.isNotEmpty) {
-                  String deviceNameWithSerial =
-                      '$_newDeviceName - $_newDeviceSerial';
+                  String deviceNameWithSerial = '$_newDeviceName - $_newDeviceSerial';
                   String data = _formatDate(DateTime.now());
-                  bool valorr = await thingsBoardService
-                      .verificar_serialKey(_newDeviceSerial.toLowerCase());
+                  bool valorr = await thingsBoardService.verificar_serialKey(_newDeviceSerial.toLowerCase());
                   if (!valorr) {
-                    String deviceId = await thingsBoardService.adicionarDevice(
+                    var telefone = await thingsBoardService.tbSecureStorage.getItem("telefone");
+                    var telefone1 = await thingsBoardService.tbSecureStorage.getItem("telefone1");
+                    var telefone2 = await thingsBoardService.tbSecureStorage.getItem("telefone2");
+                    String telefones = '$telefone,$telefone1,$telefone2';
+                    salvar_telefones_aws(_newDeviceSerial, telefones);
+                    String deviceId = await thingsBoardService.cadastrarDevice(
                         deviceNameWithSerial,
                         _newDeviceDescription,
                         _newDeviceSerial.toLowerCase(),
@@ -573,12 +561,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void adicionarwebsocket() {
-    print("Foi chamado ???????");
+
     for (var device in _deviceList) {
       var serial = device['serial'];
       var id = device['id'];
-      print("Pritando id do websockets $id");
-
       channel.sink.add(jsonEncode({
         "authCmd": {
           "cmdId": 0,
@@ -598,6 +584,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void adicionarDeviceLista() async {
+    ThingsBoardService thingsBoardService =  Provider.of<ThingsBoardService>(context, listen: false);
+    await thingsBoardService.renewTokenIfNeeded();
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
     var url = Uri.parse(

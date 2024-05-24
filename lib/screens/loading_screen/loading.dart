@@ -15,8 +15,7 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
+    thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
 
     // Simulando um delay de 2 segundos antes de navegar para a tela de login
     Timer(Duration(seconds: 3), () {

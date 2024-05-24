@@ -20,8 +20,7 @@ class _Login2State extends State<Login2> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     Config.token = thingsBoardService.getToken()!;
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
 
@@ -151,6 +150,7 @@ class _Login2State extends State<Login2> {
                           onTap: () async {
                             if (_usernameController.text.isNotEmpty &&
                                 _passwordController.text.isNotEmpty) {
+                              await thingsBoardService.renewTokenIfNeeded();
                               dynamic customer = await verifyLoginAndPassword(
                                 _usernameController.text,
                                 _passwordController.text,
@@ -180,7 +180,6 @@ class _Login2State extends State<Login2> {
                                 thingsBoardService.tbSecureStorage
                                     .setItem("nome", nome);
                                 firebaseApi.subscribeCustomerIdTopic(user);
-                                print("USER $user");
                                 Navigator.pushNamed(context, '/profile');
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

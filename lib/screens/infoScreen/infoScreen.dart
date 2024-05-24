@@ -1,8 +1,10 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/screens/infoScreen/alarmeDeviceScreen.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
 
@@ -40,8 +42,6 @@ class _InfoScreenState extends State<InfoScreen> {
     channel2.stream.listen((message) {
       var jsonResponse = jsonDecode(message);
       var data = jsonResponse['data'];
-      print("Dados do canal 2 $data");
-
       if (data.isEmpty) {
         if (mounted) {
           setState(() {
@@ -51,7 +51,6 @@ class _InfoScreenState extends State<InfoScreen> {
       } else if (data != null) {
         
         if(data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')){
-          print("Contem as 3 chaves");
           var energiaData = data['energia'][0][1];
           var saldo_dv = data['saldo'][0][1];
           var numero_dv = data['numero'][0][1];
@@ -156,6 +155,7 @@ class _InfoScreenState extends State<InfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     return Scaffold(
       backgroundColor: Colors.indigo.shade50,
       body: SafeArea(
@@ -245,8 +245,7 @@ class _InfoScreenState extends State<InfoScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DeviceAlarme(
-                                          device_id: widget.device['id']!),
+                                      builder: (context) => DeviceAlarme(device_id: widget.device['id']!, thingsBoardService: thingsBoardService),
                                     ),
                                   );
                                 },

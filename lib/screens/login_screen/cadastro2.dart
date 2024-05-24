@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:smartenergy_app/api/api_costumers_controller.dart'; // Para usar TextInputType.numberWithOptions
+import 'package:provider/provider.dart';
+import 'package:smartenergy_app/api/api_costumers_controller.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart'; // Para usar TextInputType.numberWithOptions
 
 class CadastroScreen2 extends StatefulWidget {
   @override
@@ -387,8 +389,11 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
   }
 
   void _cadastrar(BuildContext context) async {
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+    await thingsBoardService.renewTokenIfNeeded();
     final String email = _emailController.text;
     bool emailExiste = await verificarEmail(email);
+    
     if (!emailExiste) {
       try {
         final int statusCode = await criarCustomer(
@@ -401,6 +406,8 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
           cidade: _cidadeController.text,
           endereco: _enderecoController.text,
           complemento: _complementoController.text,
+          id_owner: thingsBoardService.getIdTenant()
+         
         );
 
         if (statusCode == 200) {
