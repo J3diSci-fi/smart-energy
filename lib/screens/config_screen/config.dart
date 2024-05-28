@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/editarCustomer.dart';
@@ -32,18 +33,13 @@ class _ConfigPageState extends State<ConfigPage> {
 
   Future<void> loadData() async {
     try {
-      var thingsBoardService =
-          Provider.of<ThingsBoardService>(context, listen: false);
-      var loadedNome = await thingsBoardService.tbSecureStorage.getItem("nome");
-      var loadedTelefone =
-          await thingsBoardService.tbSecureStorage.getItem("telefone");
-      var loadedEmail =
-          await thingsBoardService.tbSecureStorage.getItem("email");
-
-      var loadedTelefone1 =
-          await thingsBoardService.tbSecureStorage.getItem("telefone1");
-      var loadedTelefone2 =
-          await thingsBoardService.tbSecureStorage.getItem("telefone2");
+      dynamic customer = await getCustomer();
+      //var thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+      var loadedNome = customer['title'];
+      var loadedTelefone = customer["phone"];
+      var loadedEmail = customer['email'];
+      var loadedTelefone1 = customer['additionalInfo']['telefone1'];
+      var loadedTelefone2 = customer['additionalInfo']['telefone2'];
 
       setState(() {
         nome = loadedNome;
@@ -99,10 +95,25 @@ class _ConfigPageState extends State<ConfigPage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      // Mostra uma tela de carregamento enquanto os dados não estão prontos
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Lottie.asset(
+          "assets/Lottie/Animation - 1712852951040.json",
+          width: 150,
+          height: 150,
+          fit: BoxFit.cover, // ou BoxFit.fill, dependendo do que você preferir
+        ),
+      ),
+    );
+
     }
-    return Scaffold(
+    return  WillPopScope( 
+    onWillPop: () async  { 
+       Navigator.of(context).pop(true);
+       return true;
+     },
+    child: Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFEEEEEE),
         title: Text('Configurações'),
@@ -219,7 +230,8 @@ class _ConfigPageState extends State<ConfigPage> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget buildNonEditableField({
@@ -426,11 +438,6 @@ class _ConfigPageState extends State<ConfigPage> {
                     setState(() {
                       telefone1 = numero;
                     });
-
-                    // Atualize os dados armazenados
-                    await thingsBoardService.tbSecureStorage
-                        .setItem("telefone1", numero);
-
                     Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -495,11 +502,6 @@ class _ConfigPageState extends State<ConfigPage> {
                     setState(() {
                       telefone2 = numero;
                     });
-
-                    // Atualize os dados armazenados
-                    await thingsBoardService.tbSecureStorage
-                        .setItem("telefone2", numero);
-
                     Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -559,11 +561,6 @@ class _ConfigPageState extends State<ConfigPage> {
                     setState(() {
                       email = email2;
                     });
-
-                    // Atualize os dados armazenados
-                    await thingsBoardService.tbSecureStorage
-                        .setItem("email", email2);
-
                     Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -629,11 +626,6 @@ class _ConfigPageState extends State<ConfigPage> {
                     setState(() {
                       telefone = numero;
                     });
-
-                    // Atualize os dados armazenados
-                    await thingsBoardService.tbSecureStorage
-                        .setItem("telefone", numero);
-
                     Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -677,7 +669,6 @@ class _ConfigPageState extends State<ConfigPage> {
                   setState(() {
                     telefone2 = "";
                   });
-                  await thingsBoardService.tbSecureStorage.setItem("telefone2", " ");
                   Navigator.of(context).pop();
                 } else {
                   print("ERRO!");
@@ -716,9 +707,6 @@ class _ConfigPageState extends State<ConfigPage> {
                   setState(() {
                     telefone1 = "";
                   });
-                  await thingsBoardService.tbSecureStorage
-                      .setItem("telefone1", "");
-
                   Navigator.of(context).pop();
                 } else {
                   print("ERRO!");

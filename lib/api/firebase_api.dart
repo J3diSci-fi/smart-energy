@@ -2,8 +2,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:smartenergy_app/logic/core/appcore.dart';
 import 'package:smartenergy_app/services/notification_service.dart';
 
+
+@pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
   AppCore.soundManager.playSong();
+  
 }
 
 class FirebaseApi {

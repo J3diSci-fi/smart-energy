@@ -24,9 +24,15 @@ class _NotificationViewState extends State<NotificationView> {
   @override
   Widget build(BuildContext context) {
     ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
-    return Scaffold(
+    return  WillPopScope( 
+    onWillPop: () async { 
+      Navigator.of(context).pop(true);
+      return true;
+     },
+    child:  Scaffold(
       appBar: appBar(),
       body: _buildListView(thingsBoardService),
+    ),
     );
   }
 
