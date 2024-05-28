@@ -23,8 +23,11 @@ class _Login2State extends State<Login2> {
     ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     Config.token = thingsBoardService.getToken()!;
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
-
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+    },
+    child: Scaffold(
       backgroundColor: Color(0xFFEEEEEE),
       body: Stack(
         children: [
@@ -243,6 +246,7 @@ class _Login2State extends State<Login2> {
           ),
         ],
       ),
-    );
+    ),
+   );
   }
 }

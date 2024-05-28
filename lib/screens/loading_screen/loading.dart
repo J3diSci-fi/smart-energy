@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
@@ -15,7 +16,8 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
+    thingsBoardService =
+        Provider.of<ThingsBoardService>(context, listen: false);
 
     // Simulando um delay de 2 segundos antes de navegar para a tela de login
     Timer(Duration(seconds: 3), () {
@@ -38,8 +40,14 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
-        child: CircularProgressIndicator(),
+        child: Lottie.asset(
+          "assets/Lottie/Animation - 1716598015016.json",
+          width: 150,
+          height: 150,
+          fit: BoxFit.cover, // ou BoxFit.fill, dependendo do que você preferir
+        ),
       ),
     );
   }

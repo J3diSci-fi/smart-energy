@@ -1,11 +1,15 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/Widget/customerTopBar.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/aws_api.dart';
+import 'package:smartenergy_app/api/get_serial_aws.dart';
+import 'package:smartenergy_app/api/editarCustomer.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
+import 'package:smartenergy_app/api/post_serial_aws.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
@@ -38,9 +42,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void loadCustomerInfo() async {
-    ThingsBoardService thingsBoardService =  Provider.of<ThingsBoardService>(context, listen: false);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context, listen: false);
     String? token = thingsBoardService.getToken();
-    String? idCustomer = await thingsBoardService.tbSecureStorage.getItem("id_customer");
+    String? idCustomer =
+        await thingsBoardService.tbSecureStorage.getItem("id_customer");
 
     if (idCustomer != null && token != null) {
       CustomerInfo.idCustomer = idCustomer;
@@ -53,108 +59,102 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CustomAppBar(
-        logoOffset: 0,
-      ),
-      body: ListView.builder(
-        itemCount: _deviceList.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _buildDeviceItem(_deviceList[index], thingsBoardService);
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddDeviceDialog(context, thingsBoardService);
-        },
-        child: Icon(Icons.add),
-      ),
-      bottomNavigationBar: CurvedNavigationBar(
-        key: _bottomNavigationKey,
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        color: Color(0xFF1976D2), // Cor dos ícones quando não selecionados
-        buttonBackgroundColor: Colors.grey, // Cor do botão selecionado
-        animationDuration: Duration(milliseconds: 300),
-        items: [
-          Icon(
-            Icons.home,
-            color: Colors.white,
-          ),
-          Icon(
-            Icons.settings,
-            color: Colors.white,
-          ),
-          Icon(Icons.logout_outlined, color: Colors.white),
-          Icon(Icons.notifications, color: Colors.white),
-          //badges.Badge(
-          // badgeContent: Text(
-          // notificationCount.toString(),
-          // style: TextStyle(color: Colors.white),
-          //),
-          //child: Icon(
-          //  Icons.notifications,
-          // color: Colors.white,
-          //),
-          //),
-        ],
-        onTap: (index) async {
-          if (index == 0) {
-            // updateNotificationCount();
-          }
-          if (index == 2) {
-            thingsBoardService.tbSecureStorage.deleteItem("login");
-            thingsBoardService.tbSecureStorage.deleteItem("senha");
-            thingsBoardService.tbSecureStorage.deleteItem("id_customer");
-            thingsBoardService.tbSecureStorage.deleteItem("telefone");
-            thingsBoardService.tbSecureStorage.deleteItem("telefone1");
-            thingsBoardService.tbSecureStorage.deleteItem("telefone2");
-            thingsBoardService.tbSecureStorage.deleteItem("email");
-            thingsBoardService.tbSecureStorage.deleteItem("nome");
-            firebaseApi
-                .unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
-            channel.sink.close();
-            // Sair para a tela de login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Login2()),
-            );
-          } else if (index == 1) {
-            // Ir para a tela de configurações
-            Navigator.pushNamed(context, '/configs').then((result) {
-              if (result != null && result is bool && result) {
-                _bottomNavigationKey.currentState
-                    ?.setPage(0); // Define o índice selecionado como 0 (home)
-              }
-            });
-          } else if (index == 3) {
-            //resetNotificationCount();
-            await thingsBoardService.renewTokenIfNeeded();
-            Navigator.pushNamed(context, '/notificacoes').then((result) {
-              if (result != null && result is bool && result) {
-                _bottomNavigationKey.currentState
-                    ?.setPage(0); // Define o índice selecionado como 0 (home)
-              }
-            });
-          }
-        },
+        appBar: CustomAppBar(
+          logoOffset: 0,
+        ),
+        body: ListView.builder(
+          itemCount: _deviceList.length,
+          itemBuilder: (BuildContext context, int index) {
+            return _buildDeviceItem(_deviceList[index], thingsBoardService);
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showAddDeviceDialog(context, thingsBoardService);
+          },
+          child: Icon(Icons.add),
+        ),
+        bottomNavigationBar: CurvedNavigationBar(
+          key: _bottomNavigationKey,
+          backgroundColor: Colors.white,
+          color: Color(0xFF1976D2), // Cor dos ícones quando não selecionados
+          buttonBackgroundColor: Colors.grey, // Cor do botão selecionado
+          animationDuration: Duration(milliseconds: 300),
+          items: [
+            Icon(
+              Icons.home,
+              color: Colors.white,
+            ),
+            Icon(
+              Icons.settings,
+              color: Colors.white,
+            ),
+            Icon(Icons.logout_outlined, color: Colors.white),
+            Icon(Icons.notifications, color: Colors.white),
+            //badges.Badge(
+            // badgeContent: Text(
+            // notificationCount.toString(),
+            // style: TextStyle(color: Colors.white),
+            //),
+            //child: Icon(
+            //  Icons.notifications,
+            // color: Colors.white,
+            //),
+            //),
+          ],
+          onTap: (index) async {
+            if (index == 0) {
+              // updateNotificationCount();
+            }
+            if (index == 2) {
+              thingsBoardService.tbSecureStorage.deleteItem("login");
+              thingsBoardService.tbSecureStorage.deleteItem("senha");
+              thingsBoardService.tbSecureStorage.deleteItem("id_customer");
+              thingsBoardService.tbSecureStorage.deleteItem("telefone");
+              thingsBoardService.tbSecureStorage.deleteItem("telefone1");
+              thingsBoardService.tbSecureStorage.deleteItem("telefone2");
+              thingsBoardService.tbSecureStorage.deleteItem("email");
+              thingsBoardService.tbSecureStorage.deleteItem("nome");
+              firebaseApi
+                  .unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
+              channel.sink.close();
+              // Sair para a tela de login
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Login2()),
+              );
+            } else if (index == 1) {
+              // Ir para a tela de configurações
+              Navigator.pushNamed(context, '/configs').then((result) {
+                if (result != null && result is bool && result) {
+                  _bottomNavigationKey.currentState
+                      ?.setPage(0); // Define o índice selecionado como 0 (home)
+                }
+              });
+            } else if (index == 3) {
+              //resetNotificationCount();
+              await thingsBoardService.renewTokenIfNeeded();
+              Navigator.pushNamed(context, '/notificacoes').then((result) {
+                if (result != null && result is bool && result) {
+                  _bottomNavigationKey.currentState
+                      ?.setPage(0); // Define o índice selecionado como 0 (home)
+                }
+              });
+            }
+          },
+        ),
       ),
     );
-  }
-
-  void updateNotificationCount() {
-    setState(() {
-      notificationCount = notificationCount + 1;
-    });
-  }
-
-  void resetNotificationCount() {
-    setState(() {
-      notificationCount = 0;
-    });
   }
 
   Widget _buildDeviceItem(
@@ -307,7 +307,8 @@ class _DashboardPageState extends State<DashboardPage> {
               setState(() {
                 device['color'] = "verde";
               });
-            } else if (energiaData == "false" && device['color'] != "vermelho") {
+            } else if (energiaData == "false" &&
+                device['color'] != "vermelho") {
               setState(() {
                 device['color'] = "vermelho";
               }); // Atualizar para verde
@@ -319,12 +320,13 @@ class _DashboardPageState extends State<DashboardPage> {
           }
         }
       }
-      
     });
   }
 
-  void _deleteDevice(Map<String, String> device, ThingsBoardService thingsBoardService) async{
+  void _deleteDevice(
+      Map<String, String> device, ThingsBoardService thingsBoardService) async {
     await thingsBoardService.renewTokenIfNeeded();
+    await atualizar_status_serial(device['serial']!, "false");
     await salvar_telefones_aws(device['serial']!, "");
     setState(() {
       _deviceList.remove(device);
@@ -332,15 +334,18 @@ class _DashboardPageState extends State<DashboardPage> {
 
     thingsBoardService.tbClient.getDeviceService().deleteDevice(device['id']!);
   }
-  
+
   String _formatDate(DateTime date) {
     // Método para formatar a data
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
-  void _showAddDeviceDialogEdit(BuildContext context,ThingsBoardService thingsBoardService, Map<String, String> device) {
-    TextEditingController _nameController = TextEditingController(text: device['name']);
-    TextEditingController _descriptionController = TextEditingController(text: device['description']);
+  void _showAddDeviceDialogEdit(BuildContext context,
+      ThingsBoardService thingsBoardService, Map<String, String> device) {
+    TextEditingController _nameController =
+        TextEditingController(text: device['name']);
+    TextEditingController _descriptionController =
+        TextEditingController(text: device['description']);
     String serial = device['serial']!;
     device['serial'];
     String id_device = device['id']!;
@@ -374,7 +379,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
                 SizedBox(height: 10),
-
               ],
             ),
           ),
@@ -389,11 +393,12 @@ class _DashboardPageState extends State<DashboardPage> {
               onPressed: () async {
                 String _newDeviceName = _nameController.text;
                 String _newDeviceDescription = _descriptionController.text;
-                
-                if (_newDeviceName.isNotEmpty && _newDeviceDescription.isNotEmpty) {
-                  
+
+                if (_newDeviceName.isNotEmpty &&
+                    _newDeviceDescription.isNotEmpty) {
                   String deviceNameWithSerial = '$_newDeviceName - $serial';
-                  thingsBoardService.editarDevice(deviceNameWithSerial, id_device, _newDeviceDescription, serial!, data);
+                  thingsBoardService.editarDevice(deviceNameWithSerial,
+                      id_device, _newDeviceDescription, serial!, data);
                   setState(() {
                     device['name'] = _newDeviceName;
                     device['description'] = _newDeviceDescription;
@@ -430,9 +435,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _showAddDeviceDialog(
       BuildContext context, ThingsBoardService thingsBoardService) {
-    String _newDeviceName = ''; // Variável para armazenar o nome do novo dispositivo
-    String _newDeviceDescription = ''; // Variável para armazenar a descrição do novo dispositivo 
-    String _newDeviceSerial = ''; // Variável para armazenar o Serial Key do novo dispositivo
+    String _newDeviceName =
+        ''; // Variável para armazenar o nome do novo dispositivo
+    String _newDeviceDescription =
+        ''; // Variável para armazenar a descrição do novo dispositivo
+    String _newDeviceSerial =
+        ''; // Variável para armazenar o Serial Key do novo dispositivo
 
     showDialog(
       context: context,
@@ -468,6 +476,10 @@ class _DashboardPageState extends State<DashboardPage> {
                     _newDeviceSerial =
                         value; // Atualizar o Serial Key do dispositivo conforme o usuário digita
                   },
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   decoration: InputDecoration(
                     labelText: 'Serial Key',
                   ),
@@ -487,39 +499,86 @@ class _DashboardPageState extends State<DashboardPage> {
                 if (_newDeviceName.isNotEmpty &&
                     _newDeviceDescription.isNotEmpty &&
                     _newDeviceSerial.isNotEmpty) {
-                  String deviceNameWithSerial = '$_newDeviceName - $_newDeviceSerial';
+                  String deviceNameWithSerial =
+                      '$_newDeviceName - $_newDeviceSerial';
                   String data = _formatDate(DateTime.now());
-                  bool valorr = await thingsBoardService.verificar_serialKey(_newDeviceSerial.toLowerCase());
-                  if (!valorr) {
-                    var telefone = await thingsBoardService.tbSecureStorage.getItem("telefone");
-                    var telefone1 = await thingsBoardService.tbSecureStorage.getItem("telefone1");
-                    var telefone2 = await thingsBoardService.tbSecureStorage.getItem("telefone2");
-                    String telefones = '$telefone,$telefone1,$telefone2';
-                    salvar_telefones_aws(_newDeviceSerial, telefones);
-                    String deviceId = await thingsBoardService.cadastrarDevice(
-                        deviceNameWithSerial,
-                        _newDeviceDescription,
-                        _newDeviceSerial.toLowerCase(),
-                        data);
-                    setState(() {
-                      _deviceList.add({
-                        'name': _newDeviceName,
-                        'description': _newDeviceDescription,
-                        'serial': _newDeviceSerial,
-                        'id': deviceId,
-                        'data': data,
-                        'color': "verde",
-                      });
-                    });
-                    subscribeDivece(deviceId, _newDeviceSerial);
-                    Navigator.of(context).pop();
+                  //bool valorr = await thingsBoardService.verificar_serialKey(_newDeviceSerial.toLowerCase());
+                  var result = await fetchData("$_newDeviceSerial");
+                  if (result.isNotEmpty) {
+                    if (result['message'] == "existe") {
+                      if (result['status'] == "false") {
+                        await atualizar_status_serial(_newDeviceSerial, "true");
+                        dynamic customer = await getCustomer();
+                        var telefone = customer["phone"];
+                        var telefone1 = customer['additionalInfo']['telefone1'];
+                        var telefone2 = customer['additionalInfo']['telefone2'];
+                        String telefones = '$telefone,$telefone1,$telefone2';
+                        salvar_telefones_aws(_newDeviceSerial, telefones);
+                        String deviceId =
+                            await thingsBoardService.cadastrarDevice(
+                                deviceNameWithSerial,
+                                _newDeviceDescription,
+                                _newDeviceSerial.toLowerCase(),
+                                data);
+                        setState(() {
+                          _deviceList.add({
+                            'name': _newDeviceName,
+                            'description': _newDeviceDescription,
+                            'serial': _newDeviceSerial,
+                            'id': deviceId,
+                            'data': data,
+                            'color': "verde",
+                          });
+                        });
+
+                        subscribeDivece(deviceId, _newDeviceSerial);
+                        Navigator.of(context).pop();
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Aviso"),
+                              content: Text( "O código serial do dispositivo informado já está em uso!"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("OK"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("Aviso"),
+                            content: Text("Código de serial inválido!"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("OK"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   } else {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text("Aviso"),
-                          content: Text("Dispositivo Já cadastrado!"),
+                          content: Text(
+                              "Aconteceu um problema inesperado. Tente novamente mais tarde!"),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -561,7 +620,6 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void adicionarwebsocket() {
-
     for (var device in _deviceList) {
       var serial = device['serial'];
       var id = device['id'];
@@ -584,7 +642,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void adicionarDeviceLista() async {
-    ThingsBoardService thingsBoardService =  Provider.of<ThingsBoardService>(context, listen: false);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context, listen: false);
     await thingsBoardService.renewTokenIfNeeded();
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
@@ -640,5 +699,4 @@ class _DashboardPageState extends State<DashboardPage> {
       ]
     }));
   }
-
 }

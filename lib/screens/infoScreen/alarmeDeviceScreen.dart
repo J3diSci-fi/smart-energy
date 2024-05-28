@@ -179,7 +179,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
     String id_device = widget.device_id;
     String token = Config.token;
     var url = Uri.parse(
-        'https://thingsboard.cloud/api/alarm/DEVICE/$id_device?pageSize=30&page=0&sortProperty=createdTime&sortOrder=DESC');
+        'https://thingsboard.cloud/api/alarm/DEVICE/$id_device?pageSize=100&page=0&sortProperty=createdTime&sortOrder=DESC');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',

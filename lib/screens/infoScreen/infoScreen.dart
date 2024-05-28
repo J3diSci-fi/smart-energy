@@ -22,8 +22,7 @@ class _InfoScreenState extends State<InfoScreen> {
   String energia = "";
   String numero = "";
   String saldo = "";
-  bool isLoading =
-      true; // Adicione uma variável para controlar o estado de carregamento
+  bool isLoading = true; // Adicione uma variável para controlar o estado de carregamento
 
   @override
   void initState() {
@@ -43,6 +42,7 @@ class _InfoScreenState extends State<InfoScreen> {
       var jsonResponse = jsonDecode(message);
       var data = jsonResponse['data'];
       if (data.isEmpty) {
+        
         if (mounted) {
           setState(() {
             isLoading = false;
