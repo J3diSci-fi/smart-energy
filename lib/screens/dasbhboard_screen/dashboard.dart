@@ -42,11 +42,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void loadCustomerInfo() async {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
     String? token = thingsBoardService.getToken();
-    String? idCustomer =
-        await thingsBoardService.tbSecureStorage.getItem("id_customer");
+    String? idCustomer =  await thingsBoardService.tbSecureStorage.getItem("id_customer");
 
     if (idCustomer != null && token != null) {
       CustomerInfo.idCustomer = idCustomer;
@@ -59,8 +57,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
 
     return WillPopScope(
@@ -125,13 +122,10 @@ class _DashboardPageState extends State<DashboardPage> {
               thingsBoardService.tbSecureStorage.deleteItem("telefone2");
               thingsBoardService.tbSecureStorage.deleteItem("email");
               thingsBoardService.tbSecureStorage.deleteItem("nome");
-              firebaseApi
-                  .unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
+              firebaseApi.unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
               channel.sink.close();
               // Sair para a tela de login
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Login2()),
+              Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => Login2()),
               );
             } else if (index == 1) {
               // Ir para a tela de configurações
@@ -676,6 +670,7 @@ class _DashboardPageState extends State<DashboardPage> {
         });
       }
       adicionarwebsocket();
+      subscribeDivece("301", "0000010111011");
       leitura();
     } else {
       print('Request failed with status: ${response.statusCode}');

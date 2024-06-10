@@ -1,16 +1,15 @@
 
-
-
-//import 'package:thingsboard_client/thingsboard_client.dart';
+import 'package:thingsboard_pe_client/thingsboard_client.dart';
 
 main() async {
     try {
-     // var tbClient = ThingsboardClient('https://demo.thingsboard.io');
-     // await tbClient.login(LoginRequest('filipecarvalh5050@gmail.com', 'sistema1999'));
+      final thingsBoardApiEndpoint = 'https://thingsboard.cloud';
+      var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
+      await tbClient.login(LoginRequest('smartenergy520@gmail.com', 'smartenergy2024'));
 
-      //print('isAuthenticated=${tbClient.isAuthenticated()}');
+      print('isAuthenticated=${tbClient.isAuthenticated()}');
 
-     // print('authUser: ${tbClient.getAuthUser()}');
+      print('authUser: ${tbClient.getAuthUser()}');
 
      // var currentUserDetails = await tbClient.getUserService().getUser();
      // print('currentUserDetails: $currentUserDetails');

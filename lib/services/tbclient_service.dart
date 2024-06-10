@@ -19,7 +19,7 @@ class ThingsBoardService {
   }
 
   Future<void> _login() async {
-    await tbClient.login(LoginRequest('testesmartsmart329@gmail.com', 'sistema1999'));
+    await tbClient.login(LoginRequest('smartenergy520@gmail.com', 'smartenergy2024'));
     _isLoggedIn = true;
   }
 

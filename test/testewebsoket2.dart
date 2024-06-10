@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
 
 void main() {
-  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJub3JpZXRlY2FydmFsaG8xMkBnbWFpbC5jb20iLCJ1c2VySWQiOiJjYmM5OWJkMC1lZjAwLTExZWUtOTBiNy0xMzk5N2FjNzFiN2EiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6ImUxZThjNWQzLTdlNTMtNDRlYi05NmI1LTZlZThhMGUzZTQ5OCIsImlzcyI6InRoaW5nc2JvYXJkLmNsb3VkIiwiaWF0IjoxNzEyNzQ5NTIxLCJleHAiOjE3MTI3NzgzMjEsImZpcnN0TmFtZSI6Ikx1aXoiLCJsYXN0TmFtZSI6IkNhcnZhbGhvIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJpc0JpbGxpbmdTZXJ2aWNlIjpmYWxzZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJ0ZXJtc09mVXNlQWNjZXB0ZWQiOnRydWUsInRlbmFudElkIjoiY2FhMjBiYzAtZWYwMC0xMWVlLTkwYjctMTM5OTdhYzcxYjdhIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.Gykd7uETNKTfZNF5S_CtbIQHeboINfvwvZrJkpz_onKQdz4FyOndrHplHqunta6gTA-TAGmybtd67JELrtEqtQ";
+  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0ZXNtYXJ0c21hcnQzMjlAZ21haWwuY29tIiwidXNlcklkIjoiNDViMDUyYzAtMTk1Ni0xMWVmLWEwM2QtMTczNWNhZDQzZTg3Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiIyMWZjYmY1Mi05ZGI2LTRlY2ItYmZhMy0yOTY4NGExZGJkZDgiLCJpc3MiOiJ0aGluZ3Nib2FyZC5jbG91ZCIsImlhdCI6MTcxNzE1NjU5OSwiZXhwIjoxNzE3MTg1Mzk5LCJmaXJzdE5hbWUiOiJ0ZXN0ZXNtYXJ0IiwibGFzdE5hbWUiOiJzbWFydCIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwiaXNCaWxsaW5nU2VydmljZSI6ZmFsc2UsInByaXZhY3lQb2xpY3lBY2NlcHRlZCI6dHJ1ZSwidGVybXNPZlVzZUFjY2VwdGVkIjp0cnVlLCJ0ZW5hbnRJZCI6IjQ0NzAwYTkwLTE5NTYtMTFlZi1hMDNkLTE3MzVjYWQ0M2U4NyIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.A15_VK3_VCN_JLJX30soJF8B_NgRnUxq2HArwNYZgar6uYSEKW5A-yqtGeyjy60vWxrZV5gtJ-cxcb3l_-Q4XA";
   final devices = {
-    "device1_id": "c921a7b0-f6df-11ee-ad9b-d5803676b938",
-    "device2_id": "928701f0-f6bc-11ee-ad9b-d5803676b938"
+    "device1_id": "320",
+    "device2_id": "320"
   };
   final deviceUrl = 'ws://thingsboard.cloud/api/ws';
 
@@ -18,6 +18,7 @@ void main() {
   });
 
   channels.forEach((deviceId, channel) {
+    print("executou");
     channel.sink.add(jsonEncode({
       "authCmd": {
         "cmdId": 0,
@@ -26,7 +27,7 @@ void main() {
       "cmds": [
         {
           "entityType": "DEVICE",
-          "entityId": deviceId,
+          "entityId": 320,
           "scope": "LATEST_TELEMETRY",
           "cmdId": 10,
           "type": "TIMESERIES",

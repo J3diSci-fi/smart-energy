@@ -33,23 +33,26 @@ class _Login2State extends State<Login2> {
         children: [
           // Background Image
           Positioned.fill(
-            top: -200, // Ajuste aqui para a posição vertical da imagem
-            child: Image.asset(
-              'assets/welcome.png',
-              fit: BoxFit.none,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Image.asset(
+                'assets/logo.png',
+                fit: BoxFit.contain,
+                height: 340, // Ajuste a altura conforme necessário
+               
+              ),
             ),
           ),
           Align(
-            alignment: Alignment
-                .topCenter, // Ajuste aqui para alinhar o conteúdo ao topo
-            child: Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.height * 0.4),
-              child: SingleChildScrollView(
+            alignment: Alignment.center, // Centralizar o conteúdo
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      margin: EdgeInsets.fromLTRB(20, 40, 20, 10),
+                      margin: EdgeInsets.only(top: 220), // Ajuste a margem superior conforme necessário
                       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -73,8 +76,8 @@ class _Login2State extends State<Login2> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 20), // Espaçamento entre os campos
                     Container(
-                      margin: EdgeInsets.fromLTRB(20, 20, 20, 10),
                       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -90,9 +93,7 @@ class _Login2State extends State<Login2> {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureText
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
+                              _obscureText ? Icons.visibility : Icons.visibility_off,
                               color: Colors.grey,
                             ),
                             onPressed: () {
@@ -115,14 +116,13 @@ class _Login2State extends State<Login2> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Container(
-                        margin: EdgeInsets.fromLTRB(0, 10, 20, 10),
+                        margin: EdgeInsets.only(top: 10),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: (context) => RecuperarSenha()),
-                            ); // Navegar para a tela de cadastro
+                              MaterialPageRoute(builder: (context) => RecuperarSenha()),
+                            );
                           },
                           child: Text(
                             "Esqueceu sua Senha?",
@@ -135,8 +135,8 @@ class _Login2State extends State<Login2> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.fromLTRB(20, 20, 20, 30),
-                      width: MediaQuery.of(context).size.width * 2,
+                      margin: EdgeInsets.only(top: 20, bottom: 30),
+                      width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
@@ -151,8 +151,7 @@ class _Login2State extends State<Login2> {
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () async {
-                            if (_usernameController.text.isNotEmpty &&
-                                _passwordController.text.isNotEmpty) {
+                            if (_usernameController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
                               await thingsBoardService.renewTokenIfNeeded();
                               dynamic customer = await verifyLoginAndPassword(
                                 _usernameController.text,
@@ -166,33 +165,21 @@ class _Login2State extends State<Login2> {
                                 var telefone1 = customer['additionalInfo']['telefone1'];
                                 var telefone2 = customer['additionalInfo']['telefone2'];
                                 CustomerInfo.idCustomer = user;
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("login", _usernameController.text);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("senha", _passwordController.text);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("id_customer", user);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("telefone", telefone);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("telefone1", telefone1);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("telefone2", telefone2);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("email", email);
-                                thingsBoardService.tbSecureStorage
-                                    .setItem("nome", nome);
+                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
+                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
+                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
+                                thingsBoardService.tbSecureStorage.setItem("telefone", telefone);
+                                thingsBoardService.tbSecureStorage.setItem("telefone1", telefone1);
+                                thingsBoardService.tbSecureStorage.setItem("telefone2", telefone2);
+                                thingsBoardService.tbSecureStorage.setItem("email", email);
+                                thingsBoardService.tbSecureStorage.setItem("nome", nome);
                                 firebaseApi.subscribeCustomerIdTopic(user);
                                 Navigator.pushNamed(context, '/profile');
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text('Usuario Inválido!')));
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Usuário Inválido!')));
                               }
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(
-                                      'Por favor, preencha todos os campos.')));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Por favor, preencha todos os campos.')));
                             }
                           },
                           borderRadius: BorderRadius.circular(20),
@@ -224,9 +211,8 @@ class _Login2State extends State<Login2> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: (context) => CadastroScreen2()),
-                            ); // Navegar para a tela de cadastro
+                              MaterialPageRoute(builder: (context) => CadastroScreen2()),
+                            );
                           },
                           child: Text(
                             "Criar",
@@ -246,7 +232,9 @@ class _Login2State extends State<Login2> {
           ),
         ],
       ),
-    ),
-   );
+    )
+  );
   }
 }
+   
+ 

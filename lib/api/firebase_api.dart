@@ -5,7 +5,7 @@ import 'package:smartenergy_app/services/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  AppCore.soundManager.playSong();
+  AppCore.soundManager.play();
   
 }
 
@@ -37,16 +37,24 @@ class FirebaseApi {
 
   Future initPushNotifications(String token) async {
     FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message){
+      handleMessage(message);
+    });
+
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       final notification = message.notification;
-      final notificationTitle = notification!.title;
-      final notificationBody = notification.body;
-      notificationService.showNotification(
-          title: notificationTitle, body: notificationBody);
-      AppCore.soundManager.playSong();
+      if(notification != null){
+        final notificationTitle = notification!.title;
+        final notificationBody = notification.body;
+        notificationService.showNotification(title: notificationTitle, body: notificationBody);
+        AppCore.soundManager.play();
+      }
+      else{
+        print("Notificação nulla");
+      }
+      
     });
   }
 }

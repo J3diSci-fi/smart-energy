@@ -9,10 +9,9 @@ import 'package:smartenergy_app/services/tbclient_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   ThingsBoardService thingsBoardService = ThingsBoardService();
   await thingsBoardService.initialize();  
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
