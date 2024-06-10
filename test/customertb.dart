@@ -1,4 +1,6 @@
+
 import 'package:thingsboard_pe_client/thingsboard_client.dart';
+//import 'package:thingsboard_pe_client/thingsboard_client.dart';
 
 const thingsBoardApiEndpoint = 'https://thingsboard.cloud';
 
@@ -10,7 +12,7 @@ void main(List<String> args) async {
   var device1 = Device("feio2",'default');
   device1.additionalInfo = {'description': 'My test device!'};
   EntityId customerId = CustomerId("9943e910-10be-11ef-bf1e-eb47e687e405");
-  device1.setOwnerId(customerId);
+  //device1.setOwnerId(customerId);
   var savedDevice = await tbClient.getDeviceService().saveDevice(device1);
   String deviceId = savedDevice.id?.id ?? 'N/A';
   print(deviceId);

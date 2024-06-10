@@ -4,6 +4,8 @@ import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class DeviceAlarme extends StatefulWidget {
   final String device_id;
@@ -190,6 +192,8 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       var alarms = jsonResponse['data'];
+      tz.initializeTimeZones();
+      var localTimezone = tz.getLocation('America/Sao_Paulo');
       for (var alarm in alarms) {
         var id = alarm['id']['id'];
         var createdTimeMillis = alarm['createdTime'];
@@ -198,12 +202,11 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
         var name = alarm['originatorName'];
         String novoNome = name.split("-")[0];
         // Ajusta a data e hora em 3 horas para trás
-        var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis)
-            .subtract(Duration(hours: 3));
-
+       
+        //var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis).subtract(Duration(hours: 3));
+        var dateTime = tz.TZDateTime.fromMillisecondsSinceEpoch(localTimezone, createdTimeMillis);
         // Formata a data e hora no padrão brasileiro
-        var formattedDateTime =
-            DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+        var formattedDateTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
 
         if (status == "CLEARED_ACK") {
           status = "Confirmado";

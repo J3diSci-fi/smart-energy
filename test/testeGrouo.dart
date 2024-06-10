@@ -1,10 +1,11 @@
 import 'package:smartenergy_app/api/api_cfg.dart';
+
 import 'package:thingsboard_pe_client/thingsboard_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 
-const thingsBoardApiEndpoint = 'https://thingsboard.cloud';
+const thingsBoardApiEndpoint = 'https://demo.thingsboard.io';
 
 Future<dynamic> getAllCustomers(String token) async {
   final String url = '${Config.apiUrl}/customers?pageSize=1000&page=0';
@@ -45,6 +46,7 @@ void main(List<String> args) async {
   var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
   await tbClient.login(LoginRequest('smartenergy.039@gmail.com', 'smartenergy2024'));
   print(tbClient.isAuthenticated());
+  print(tbClient.getJwtToken());
   //tbClient.refreshJwtToken();
   //print(tbClient.getAuthUser()!.tenantId);
   //print(tbClient.isJwtTokenValid());

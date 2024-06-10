@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'package:smartenergy_app/logic/audio/soundManager.dart';
+import 'package:flutter/material.dart';
 Future<void> setOwnerDevice(String id) async {
   final url = Uri.parse('https://thingsboard.cloud/api/owner/CUSTOMER/9943e910-10be-11ef-bf1e-eb47e687e405/DEVICE/$id');
   final headers = {
@@ -87,7 +88,9 @@ Future<String> cadastrarDevice(String nome, String serial_key, String descricao,
   return "erro";
 }
 
-void main() {
-  cadastrarDevice("Filipe","55555","fala sério", "29/09/2020");
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SoundManager sound = SoundManager();
+  //sound.playSong(); 
   
 }
