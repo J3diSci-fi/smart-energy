@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
 
 void main() {
-  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0ZXNtYXJ0c21hcnQzMjlAZ21haWwuY29tIiwidXNlcklkIjoiNDViMDUyYzAtMTk1Ni0xMWVmLWEwM2QtMTczNWNhZDQzZTg3Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiIyMWZjYmY1Mi05ZGI2LTRlY2ItYmZhMy0yOTY4NGExZGJkZDgiLCJpc3MiOiJ0aGluZ3Nib2FyZC5jbG91ZCIsImlhdCI6MTcxNzE1NjU5OSwiZXhwIjoxNzE3MTg1Mzk5LCJmaXJzdE5hbWUiOiJ0ZXN0ZXNtYXJ0IiwibGFzdE5hbWUiOiJzbWFydCIsImVuYWJsZWQiOnRydWUsImlzUHVibGljIjpmYWxzZSwiaXNCaWxsaW5nU2VydmljZSI6ZmFsc2UsInByaXZhY3lQb2xpY3lBY2NlcHRlZCI6dHJ1ZSwidGVybXNPZlVzZUFjY2VwdGVkIjp0cnVlLCJ0ZW5hbnRJZCI6IjQ0NzAwYTkwLTE5NTYtMTFlZi1hMDNkLTE3MzVjYWQ0M2U4NyIsImN1c3RvbWVySWQiOiIxMzgxNDAwMC0xZGQyLTExYjItODA4MC04MDgwODA4MDgwODAifQ.A15_VK3_VCN_JLJX30soJF8B_NgRnUxq2HArwNYZgar6uYSEKW5A-yqtGeyjy60vWxrZV5gtJ-cxcb3l_-Q4XA";
+  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiZjhjYzQ0ZDAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiJjNTNhOGI5OS0zZDBhLTQ5M2EtOWJmMS0yNjA3MDJiNzQwOTEiLCJleHAiOjI3OTM3ODAxOTUsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwiaWF0IjoxNzIwMDM4MzcyLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYzdkYjQ2ZjAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3IiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.Yw8VwsHc6w5PDX6NcxKZwAf_Un112fC_YdVrAyJSLov0C_8LVtpVy5vG3-vRk4xo1Y997yDjyc2LRYAQL0pzsA";
   final devices = {
-    "device1_id": "320",
-    "device2_id": "320"
+    "device1_id": "c4ae95d0-3c9e-11ef-b3af-6d7e77e3da37"
   };
-  final deviceUrl = 'ws://thingsboard.cloud/api/ws';
+  final deviceUrl = 'ws://backend.smartenergy.smartrural.com.br/api/ws';
 
   final channels = devices.map((deviceId, _) {
     final channel = IOWebSocketChannel.connect(deviceUrl);
@@ -27,7 +26,7 @@ void main() {
       "cmds": [
         {
           "entityType": "DEVICE",
-          "entityId": 320,
+          "entityId": deviceId,
           "scope": "LATEST_TELEMETRY",
           "cmdId": 10,
           "type": "TIMESERIES",

@@ -1,6 +1,6 @@
 
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
-
+//import 'package:thingsboard_pe_client/thingsboard_client.dart';
+import 'package:thingsboard_client/thingsboard_client.dart';
 main() async {
     try {
       var tbClient = ThingsboardClient('https://demo.thingsboard.io');

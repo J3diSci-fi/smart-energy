@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
+import 'package:smartenergy_app/api/send_attributes.dart';
+import 'package:smartenergy_app/api/utils.dart';
 import 'package:smartenergy_app/screens/infoScreen/alarmeDeviceScreen.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 import 'package:web_socket_channel/io.dart';
@@ -18,15 +20,18 @@ class InfoScreen extends StatefulWidget {
 }
 
 class _InfoScreenState extends State<InfoScreen> {
-  final channel2 = IOWebSocketChannel.connect('ws://thingsboard.cloud/api/ws');
+  final channel2 = IOWebSocketChannel.connect(
+      'ws://backend.smartenergy.smartrural.com.br/api/ws');
   String energia = "";
   String numero = "";
   String saldo = "";
-  bool isLoading = true; // Adicione uma variável para controlar o estado de carregamento
+  bool isLoading =
+      true; // Adicione uma variável para controlar o estado de carregamento
 
   @override
   void initState() {
     super.initState();
+    enviarDadosAoThingsboard(widget.device['serial']!);
     adicionarDevice();
     leitura();
   }
@@ -38,104 +43,116 @@ class _InfoScreenState extends State<InfoScreen> {
   }
 
   void leitura() {
-    channel2.stream.listen((message) {
-      var jsonResponse = jsonDecode(message);
-      var data = jsonResponse['data'];
-      if (data.isEmpty) {
-        
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      } else if (data != null) {
-        
-        if(data.containsKey('energia') && data.containsKey('saldo') && data.containsKey('numero')){
-          var energiaData = data['energia'][0][1];
-          var saldo_dv = data['saldo'][0][1];
-          var numero_dv = data['numero'][0][1];
-
-          if(energiaData == "true"){
-            energiaData =  "Energia ON";
+    try {
+      channel2.stream.listen((message) {
+        var jsonResponse = jsonDecode(message);
+        if (jsonResponse == null || jsonResponse.isEmpty) {
+          if (mounted) {
+            setState(() {
+              isLoading = false; // Impede que a tela trave
+            });
           }
-          else{
-            energiaData =  "Energia OFF";
-          }
+          return;
+        } else {
+          var data = jsonResponse['data'];
 
-          if(energia != energiaData || saldo !=saldo_dv || numero != numero_dv){
-
-            if(mounted){
+          if (data.isEmpty) {
+            if (mounted) {
               setState(() {
-                energia  = energiaData;
-                saldo = saldo_dv;
-                numero = numero_dv;
                 isLoading = false;
               });
             }
-          }
-          else{
-            print("Os dados continuam os mesmos, sem atualizações por enquanto!");
-          }
+          } else if (data != null) {
+            if (data.containsKey('energia') &&
+                data.containsKey('saldo') &&
+                data.containsKey('numero')) {
+              var energiaData = data['energia'][0][1];
+              var saldo_dv = data['saldo'][0][1];
+              var numero_dv = data['numero'][0][1];
 
+              if (energiaData == "true") {
+                energiaData = "Energia ON";
+              } else {
+                energiaData = "Energia OFF";
+              }
+
+              if (energia != energiaData ||
+                  saldo != saldo_dv ||
+                  numero != numero_dv) {
+                if (mounted) {
+                  setState(() {
+                    energia = energiaData;
+                    saldo = saldo_dv;
+                    numero = numero_dv;
+                    isLoading = false;
+                  });
+                }
+              } else {
+                print(
+                    "Os dados continuam os mesmos, sem atualizações por enquanto!");
+              }
+            }
+
+            if (data.containsKey('energia')) {
+              var energiaData = data['energia'][0][1];
+
+              if (energiaData == "true") {
+                energiaData = "Energia ON";
+              } else {
+                energiaData = "Energia OFF";
+              }
+
+              if (energia != energiaData) {
+                setState(() {
+                  energia = energiaData;
+                });
+              } else {
+                print("A energia continua a mesma coisa, não atualizo a tela");
+              }
+            }
+
+            if (data.containsKey('saldo')) {
+              var saldo_dv = data['saldo'][0][1];
+
+              if (saldo != saldo_dv) {
+                setState(() {
+                  saldo = saldo_dv;
+                });
+              } else {
+                print("O saldo continua o mesmo, sem mudanças por enquanto!");
+              }
+            }
+
+            if (data.containsKey('numero')) {
+              var numero_dv = data['numero'][0][1];
+              if (numero != numero_dv) {
+                setState(() {
+                  numero = numero_dv;
+                });
+              } else {
+                print("O número permanece o mesmo, sem mudanças na tela");
+              }
+            }
+          } else {
+            print("Dados não são válidos.");
+          }
         }
-
-        if(data.containsKey('energia')){
-          var energiaData = data['energia'][0][1];
-          
-          if(energiaData == "true"){
-            energiaData =  "Energia ON";
-          }
-          else{
-            energiaData =  "Energia OFF";
-          }
-
-          if(energia != energiaData){
-            setState(() {
-              energia = energiaData;
-            });
-          }
-          else{
-            print("A energia continua a mesma coisa, não atualizo a tela");
-          }
-        }
-
-        if(data.containsKey('saldo')){
-          var saldo_dv = data['saldo'][0][1];
-
-          if(saldo != saldo_dv){
-            setState(() {
-              saldo = saldo_dv;
-            });
-          }
-          else{
-            print("O saldo continua o mesmo, sem mudanças por enquanto!");
-          }
-        }
-
-        if(data.containsKey('numero')){
-          var numero_dv = data['numero'][0][1];
-          if(numero != numero_dv){
-            setState(() {
-              numero = numero_dv;
-            });
-
-          }
-          else{
-            print("O número permanece o mesmo, sem mudanças na tela");
-          }
-
-        }
- 
-      } else {
-        print("Dados não são válidos.");
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false; // Define como falso em caso de erro
+        });
       }
-    });
+    }
   }
 
   void adicionarDevice() {
-    
     String id_device = widget.device['id']!;
     String serial = widget.device['serial']!;
+    serial = formatSerialKey(serial!); //tirei os hifens
+    serial = getFromEighthDigit(serial); // peguei 8 digitos
+    serial = convertLettersToNumbers(serial); //converti em numeros
     channel2.sink.add(jsonEncode({
       "authCmd": {
         "cmdId": 0,
@@ -155,7 +172,8 @@ class _InfoScreenState extends State<InfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     return Scaffold(
       backgroundColor: Colors.indigo.shade50,
       body: SafeArea(
@@ -245,7 +263,10 @@ class _InfoScreenState extends State<InfoScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DeviceAlarme(device_id: widget.device['id']!, thingsBoardService: thingsBoardService),
+                                      builder: (context) => DeviceAlarme(
+                                          device_id: widget.device['id']!,
+                                          thingsBoardService:
+                                              thingsBoardService),
                                     ),
                                   );
                                 },

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.3+4
+version: 1.0.5+6
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -30,12 +30,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  path_provider: ^2.1.2
+  pdf: ^3.11.1
   intl: ^0.17.0
   http: ^0.13.3
+  mqtt_client: ^9.6.1
+  jwt_decoder: ^2.0.1
   flutter_keyboard_visibility: ^5.0.0
   curved_navigation_bar: ^1.0.3
   badges: ^2.0.1
-  thingsboard_pe_client: ^1.1.1
+  thingsboard_client: ^1.2.0
   provider: ^6.1.2
   firebase_messaging: ^14.7.18
   firebase_core: ^2.27.1

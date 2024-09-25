@@ -11,19 +11,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   ThingsBoardService thingsBoardService = ThingsBoardService();
-  await thingsBoardService.initialize();  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseApi firebaseApi = FirebaseApi();
   await firebaseApi.initNotifications();
-
+  
   runApp(
     MultiProvider(
       providers: [
         Provider<ThingsBoardService>.value(value: thingsBoardService),
         Provider<FirebaseApi>.value(
-            value: firebaseApi), // Fornecer a instância de FirebaseApi
+            value: firebaseApi), 
       ],
       child: MyApp(),
     ),

@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
+//import 'package:thingsboard_pe_client/thingsboard_client.dart';
 
+import 'package:thingsboard_client/thingsboard_client.dart';
 TbStorage createAppStorage() => TbSecureStorage();
 
 class TbSecureStorage implements TbStorage {

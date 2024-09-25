@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
-import 'package:smartenergy_app/services/tbclient_service.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -25,7 +22,6 @@ class _NotificationViewState extends State<NotificationView> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
     return  WillPopScope( 
     onWillPop: () async { 
       Navigator.of(context).pop(true);
@@ -33,12 +29,12 @@ class _NotificationViewState extends State<NotificationView> {
      },
     child:  Scaffold(
       appBar: appBar(),
-      body: _buildListView(thingsBoardService),
+      body: _buildListView(),
     ),
     );
   }
 
-  Widget _buildListView(ThingsBoardService thingsBoardService) {
+  Widget _buildListView() {
     return ListView.builder(
       itemCount: _alarmes.length,
       itemBuilder: (context, index) {
@@ -47,11 +43,32 @@ class _NotificationViewState extends State<NotificationView> {
         var detalhes = alarm['detalhes'] ?? '';
         var status = alarm['status'] ?? '';
         var data = alarm['data'] ?? '';
+        var hora = alarm['hora'];
+        bool isBefore2024 = false;
+        if (hora.isNotEmpty) {
+          try {
+            // Defina o formato correto da string de data/hora
+            var format = DateFormat('dd/MM/yyyy HH:mm:ss'); // Exemplo de formato
+            DateTime dateTime = format.parse(hora);
+            int year = dateTime.year;
 
+            // Comparar o ano com 2024
+            isBefore2024 = year < 2024;
+          } catch (e) {
+            print("Erro ao parsear a data: $e");
+          }
+        }
+
+        if(isBefore2024){
+          hora = "";
+        }
+        else{
+          hora = ": $hora";
+        }
         // Definindo uma cor padrão
         Color color = Colors.green;
-        IconData icon = Icons.check_circle; // Ícone padrão para status "CLEARED_ACK"
-
+        IconData icon =
+            Icons.check_circle; // Ícone padrão para status "CLEARED_ACK"
         // Verificando o status do alarme
         if (status == "Confirmado") {
           color = Colors.green;
@@ -92,7 +109,7 @@ class _NotificationViewState extends State<NotificationView> {
                   Text(detalhes),
                   SizedBox(height: 5),
                   Text(
-                    'Status: $status',
+                    'Status: $status$hora',
                     style: TextStyle(color: color),
                   ),
                   Text('Data: $data'),
@@ -116,9 +133,8 @@ class _NotificationViewState extends State<NotificationView> {
                           TextButton(
                             child: Text("Confirmar"),
                             onPressed: () async {
-                             await thingsBoardService.renewTokenIfNeeded();
-                              _confirmarAlarme(alarm);
                               Navigator.of(context).pop();
+                              _confirmarAlarme(alarm);
                             },
                           ),
                         ],
@@ -135,7 +151,7 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   void confirmar(String id, String token) async {
-    var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/ack');
+    var url = Uri.parse('${Config.apiUrl}/alarm/$id/ack');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',
@@ -151,7 +167,7 @@ class _NotificationViewState extends State<NotificationView> {
   }
 
   void clear(String id, String token) async {
-    var url = Uri.parse('https://thingsboard.cloud:443/api/alarm/$id/clear');
+    var url = Uri.parse('${Config.apiUrl}/alarm/$id/clear');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',
@@ -166,24 +182,31 @@ class _NotificationViewState extends State<NotificationView> {
     }
   }
 
-  void _confirmarAlarme(Map<String, dynamic> alarm) {
+  void _confirmarAlarme(Map<String, dynamic> alarm) async {
     String token = Config.token;
     //confirmar
     confirmar(alarm['id'], token);
     //clear
     clear(alarm['id'], token);
+    tz.initializeTimeZones();
+    var localTimezone = tz.getLocation('America/Sao_Paulo');
 
+    var dateTimeInLocalTimezone = tz.TZDateTime.now(localTimezone);
+    var formattedDate =
+        DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTimeInLocalTimezone);
     setState(() {
       alarm['status'] = "Confirmado";
+      alarm['hora'] = formattedDate;
     });
   }
+
 
   void fetchData() async {
     
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
     var url = Uri.parse(
-        'https://thingsboard.cloud/api/alarm/CUSTOMER/$id_customer?pageSize=30&page=0&sortProperty=createdTime&sortOrder=DESC');
+        '${Config.apiUrl}/alarm/CUSTOMER/$id_customer?pageSize=30&page=0&sortProperty=createdTime&sortOrder=DESC');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',
@@ -192,7 +215,6 @@ class _NotificationViewState extends State<NotificationView> {
     var response = await http.get(url, headers: headers);
 
     if (response.statusCode == 200) {
-
       var jsonResponse = jsonDecode(response.body);
       var alarms = jsonResponse['data'];
       tz.initializeTimeZones();
@@ -204,12 +226,15 @@ class _NotificationViewState extends State<NotificationView> {
         var status = alarm['status'];
         var name = alarm['originatorName'];
         String novoNome = name.split("-")[0];
+        var data_confirmacao = alarm["ackTs"];
+        var dateTime2 = tz.TZDateTime.fromMillisecondsSinceEpoch(
+            localTimezone, data_confirmacao);
+        var formatodata2 = DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime2);
 
-        // Ajusta a data e hora em 3 horas para trás
-        //var dateTime = DateTime.fromMillisecondsSinceEpoch(createdTimeMillis).subtract(Duration(hours: 3));
-        var dateTime = tz.TZDateTime.fromMillisecondsSinceEpoch(localTimezone, createdTimeMillis);
-        // Formata a data e hora no padrão brasileiro
-        var formattedDateTime = DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
+        var dateTime = tz.TZDateTime.fromMillisecondsSinceEpoch(
+            localTimezone, createdTimeMillis);
+        var formattedDateTime =
+            DateFormat('dd/MM/yyyy HH:mm:ss').format(dateTime);
 
         if (status == "CLEARED_ACK") {
           status = "Confirmado";
@@ -223,6 +248,7 @@ class _NotificationViewState extends State<NotificationView> {
             'status': status,
             'id': id,
             'data': formattedDateTime,
+            'hora': formatodata2
           });
         });
       }
@@ -230,6 +256,7 @@ class _NotificationViewState extends State<NotificationView> {
       print('Erro: ${response.statusCode}');
     }
   }
+
 
   PreferredSizeWidget appBar() {
     return AppBar(

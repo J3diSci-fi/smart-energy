@@ -1,6 +1,7 @@
 import 'package:smartenergy_app/api/api_cfg.dart';
 
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
+//import 'package:thingsboard_pe_client/thingsboard_client.dart';
+import 'package:thingsboard_client/thingsboard_client.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:async';

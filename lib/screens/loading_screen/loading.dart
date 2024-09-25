@@ -16,9 +16,6 @@ class _LoadingPageState extends State<LoadingPage> {
   @override
   void initState() {
     super.initState();
-    thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
-
     // Simulando um delay de 2 segundos antes de navegar para a tela de login
     Timer(Duration(seconds: 3), () {
       // Destruir a tela de loading e ir para a tela de login
@@ -27,13 +24,17 @@ class _LoadingPageState extends State<LoadingPage> {
   }
 
   Future<void> loadLogin() async {
-    String? login = await thingsBoardService.tbSecureStorage.getItem("login");
-    String? senha = await thingsBoardService.tbSecureStorage.getItem("senha");
-    if (login != null && senha != null) {
-      Navigator.pushNamed(context, '/profile');
-    } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Login2()));
+    try {
+      String? login = await ThingsBoardService.tbSecureStorage.getItem("login");
+      String? senha = await ThingsBoardService.tbSecureStorage.getItem("senha");
+      if (login != null && senha != null) {
+        Navigator.pushNamed(context, '/profile');
+      } else {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => Login2()));
+      }
+    } catch (e) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login2()));
     }
   }
 

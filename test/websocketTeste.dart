@@ -1,11 +1,22 @@
 import 'dart:convert';
+import 'package:smartenergy_app/api/utils.dart';
 import 'package:web_socket_channel/io.dart';
 
+String getFromEighthDigit(String serial) {
+  if (serial.length <= 8) {
+    return serial; // Caso a string tenha menos ou igual a 7 dígitos, retorna ela mesma
+  }
+  return serial.substring(8); // Retorna a partir do 8º dígito
+}
 void main() {
-  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJub3JpZXRlY2FydmFsaG8xMkBnbWFpbC5jb20iLCJ1c2VySWQiOiJjYmM5OWJkMC1lZjAwLTExZWUtOTBiNy0xMzk5N2FjNzFiN2EiLCJzY29wZXMiOlsiVEVOQU5UX0FETUlOIl0sInNlc3Npb25JZCI6IjQyY2I1NzMwLTZmOTAtNDE0MS04OWIyLTVmNmQ3ZDg1ZmU4NyIsImlzcyI6InRoaW5nc2JvYXJkLmNsb3VkIiwiaWF0IjoxNzEzMDE3OTYzLCJleHAiOjE3MTMwNDY3NjMsImZpcnN0TmFtZSI6Ikx1aXoiLCJsYXN0TmFtZSI6IkNhcnZhbGhvIiwiZW5hYmxlZCI6dHJ1ZSwiaXNQdWJsaWMiOmZhbHNlLCJpc0JpbGxpbmdTZXJ2aWNlIjpmYWxzZSwicHJpdmFjeVBvbGljeUFjY2VwdGVkIjp0cnVlLCJ0ZXJtc09mVXNlQWNjZXB0ZWQiOnRydWUsInRlbmFudElkIjoiY2FhMjBiYzAtZWYwMC0xMWVlLTkwYjctMTM5OTdhYzcxYjdhIiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.Y6rF6FU2saoDtaHS8FdYscavHWYptF9zxXQcykDrnA-BTYXNa12XQv9MGn6DTgQUP9nvFkStQy9BcIHsjpXEGA";
-  final entityId = "928701f0-f6bc-11ee-ad9b-d5803676b938";
-  final channel = IOWebSocketChannel.connect('ws://thingsboard.cloud/api/ws');
-
+  final token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiZjhjYzQ0ZDAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiJjNTNhOGI5OS0zZDBhLTQ5M2EtOWJmMS0yNjA3MDJiNzQwOTEiLCJleHAiOjI3OTM3ODAxOTUsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwiaWF0IjoxNzIwMDM4MzcyLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYzdkYjQ2ZjAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3IiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.Yw8VwsHc6w5PDX6NcxKZwAf_Un112fC_YdVrAyJSLov0C_8LVtpVy5vG3-vRk4xo1Y997yDjyc2LRYAQL0pzsA";
+  final entityId = "c5b67c50-75eb-11ef-b3af-6d7e77e3da37";
+  final channel = IOWebSocketChannel.connect('ws://backend.smartenergy.smartrural.com.br/api/ws');
+  String serial = "2024-0917-AAA1";
+  serial = formatSerialKey(serial);
+  String serial2 = convertLettersToNumbers(serial);
+  serial2 = getFromEighthDigit(serial2);
+  print("cmdid: ${serial2}");
   if (entityId == "") {
     print("Invalid device id!");
     channel.sink.close();
@@ -20,14 +31,13 @@ void main() {
 
   channel.stream.listen((message) {
     print("Message is received: $message");
-    var jsonResponse = jsonDecode(message);
-    var deviceEntityId = jsonResponse['deviceId']; // ou outra chave que identifique o dispositivo
-    print("Message is received from device: $deviceEntityId");
+    print(serial2);
+   
   });
   
   channel.sink.add(jsonEncode({
     "authCmd": {
-      "cmdId": 0,
+      "cmdId": 1,
       "token": token,
     },
     "cmds": [
@@ -35,30 +45,12 @@ void main() {
         "entityType": "DEVICE",
         "entityId": entityId,
         "scope": "LATEST_TELEMETRY",
-        "cmdId": 10,
-        "type": "TIMESERIES",
-        "keys": "energia",
+        "cmdId": 012,
+        "type": "TIMESERIES"
+        
       }
     ]
   }));
-    //PASSO O SERIAL KEY
-    channel.sink.add(jsonEncode({
-    "authCmd": {
-      "cmdId": 0,
-      "token": token,
-    },
-    "cmds": [
-      {
-        "entityType": "DEVICE",
-        "entityId": "c921a7b0-f6df-11ee-ad9b-d5803676b938",
-        "scope": "LATEST_TELEMETRY",
-        "cmdId": 20,
-        "type": "TIMESERIES",
-        "keys": "energia",
-      }
-    ]
-  }));
-  
-
+    
   print("Message is sent");
 }

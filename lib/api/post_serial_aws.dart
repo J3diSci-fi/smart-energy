@@ -10,13 +10,13 @@ Future<void> atualizar_status_serial(String serial, String status) async {
   
   if (response.statusCode == 200) {
     var data = json.decode(response.body);
-    print("Requisição bem-sucedida!");
-    print("Resposta: $data");
+    print("atualizar status: Requisição bem-sucedida!");
+    print("atualizar status:Resposta: $data");
 
     var bodyData = json.decode(data['body']);
     print(bodyData);
     
   } else {
-    print("Erro na requisição: ${response.body}");
+    print("atualizar status: Erro na requisição: ${response.body}");
   }
 }

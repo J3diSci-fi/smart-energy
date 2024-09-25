@@ -1,12 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
-import 'package:smartenergy_app/services/tbclient_service.dart'; // Para usar TextInputType.numberWithOptions
+import 'package:smartenergy_app/screens/login_screen/login2.dart';
 
 class CadastroScreen2 extends StatefulWidget {
   @override
   _CadastroScreen2 createState() => _CadastroScreen2();
+}
+
+class CpfInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final numbers = newValue.text.replaceAll(RegExp(r'\D'), '');
+    String formatted = '';
+
+    if (numbers.length > 11) {
+      formatted = numbers.substring(0, 11); // Limita a 11 números
+    } else {
+      formatted = numbers;
+    }
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 }
 
 class _CadastroScreen2 extends State<CadastroScreen2> {
@@ -16,11 +35,11 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
       TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
-  final TextEditingController _estadoController = TextEditingController();
+  final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _cidadeController = TextEditingController();
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _complementoController = TextEditingController();
-  final TextEditingController _cepController = TextEditingController();
+  final TextEditingController _cpfController = TextEditingController();
   bool _obscureText = true;
   bool _obscureText2 = true;
 
@@ -201,21 +220,21 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  controller: _cepController,
-                  keyboardType: TextInputType.numberWithOptions(
-                    decimal: false,
-                    signed: false,
-                  ),
+                  controller: _cpfController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    CpfInputFormatter(),
+                  ],
                   decoration: InputDecoration(
                     icon: Icon(
-                      Icons.location_on,
+                      Icons.assignment_ind,
                       color: Color(0xFF1976D2),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey.shade100),
                     ),
-                    labelText: "Cep",
+                    labelText: "CPF",
                     enabledBorder: InputBorder.none,
                     labelStyle: TextStyle(
                       color: Colors.grey,
@@ -231,16 +250,16 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
-                  controller: _estadoController,
+                  controller: _nomeController,
                   decoration: InputDecoration(
                     icon: Icon(
-                      Icons.flag,
+                      Icons.person_outline,
                       color: Color(0xFF1976D2),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey.shade100),
                     ),
-                    labelText: "Estado",
+                    labelText: "Nome Completo",
                     enabledBorder: InputBorder.none,
                     labelStyle: TextStyle(
                       color: Colors.grey,
@@ -340,7 +359,7 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () async {
-                      if (_validateFields()) {
+                      if (_validateFields() && validarCpf()) {
                         _cadastrar(context);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -382,47 +401,89 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
         _confirmaSenhaController.text.isNotEmpty &&
         _emailController.text.isNotEmpty &&
         _telefoneController.text.isNotEmpty &&
-        _estadoController.text.isNotEmpty &&
+        _nomeController.text.isNotEmpty &&
         _cidadeController.text.isNotEmpty &&
         _enderecoController.text.isNotEmpty &&
-        _cepController.text.isNotEmpty;
+        _cpfController.text.isNotEmpty;
+  }
+
+  bool validarCpf() {
+    if (_cpfController.text.trim().length == 11) {
+      return true;
+    } else {
+      _cpfController.clear(); // Limpa o campo de texto
+      return false;
+    }
   }
 
   void _cadastrar(BuildContext context) async {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
-    await thingsBoardService.renewTokenIfNeeded();
     final String email = _emailController.text;
+    final String cpf = _cpfController.text;
+    bool cpf_existe = await verificarcpf(cpf);
     bool emailExiste = await verificarEmail(email);
-    
-    if (!emailExiste) {
-      try {
-        final int statusCode = await criarCustomer(
-          login: _loginController.text,
-          senha: _senhaController.text,
-          email: _emailController.text,
-          telefone: _telefoneController.text,
-          cep: _cepController.text,
-          estado: _estadoController.text,
-          cidade: _cidadeController.text,
-          endereco: _enderecoController.text,
-          complemento: _complementoController.text,
-          id_owner: thingsBoardService.getIdTenant()
-         
-        );
+    if (!cpf_existe) {
+      if (!emailExiste) {
+        try {
+          final int statusCode = await criarCustomer(
+              login: _loginController.text,
+              senha: _senhaController.text,
+              email: _emailController.text,
+              telefone: _telefoneController.text,
+              cpf: _cpfController.text,
+              nome: _nomeController.text,
+              cidade: _cidadeController.text,
+              endereco: _enderecoController.text,
+              complemento: _complementoController.text);
 
-        if (statusCode == 200) {
-          // Exibir AlertDialog com sucesso
+          if (statusCode == 200) {
+            // Exibir AlertDialog com sucesso
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Sucesso'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 40),
+                    SizedBox(height: 8),
+                    Text('$email\nCadastrado com sucesso!'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => Login2()),
+                      );
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          } else if (statusCode == 403 || statusCode == 400) {
+            // Exibir Snackbar com a mensagem de usuário já cadastrado
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Usuário já cadastrado (login em uso)!')),
+            );
+          }
+        } catch (e) {
+          print('Erro ao realizar a requisição: $e');
+          // Exibir AlertDialog com erro
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Sucesso'),
+              title: Text('Erro'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 40),
+                  Icon(Icons.error_outline, color: Colors.red, size: 40),
                   SizedBox(height: 8),
-                  Text('$email\nCadastrado com sucesso!'),
+                  Text('Erro ao cadastrar usuário!'),
                 ],
               ),
               actions: [
@@ -435,44 +496,19 @@ class _CadastroScreen2 extends State<CadastroScreen2> {
               ],
             ),
           );
-        } else if (statusCode == 403 || statusCode == 400) {
-          // Exibir Snackbar com a mensagem de usuário já cadastrado
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Usuário já cadastrado (login em uso)!')),
-          );
         }
-      } catch (e) {
-        print('Erro ao realizar a requisição: $e');
-        // Exibir AlertDialog com erro
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Erro'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.error_outline, color: Colors.red, size: 40),
-                SizedBox(height: 8),
-                Text('Erro ao cadastrar usuário!'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          ),
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Email já cadastrado. Por favor, tente com um email diferente!')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                'Email já cadastrado. Por favor, tente com um email diferente!')),
+                'CPF já cadastrado. Por favor, tente com um CPF diferente!')),
       );
     }
   }
