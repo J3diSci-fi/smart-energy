@@ -3,52 +3,16 @@ import 'package:smartenergy_app/api/api_cfg.dart';
 import 'dart:convert';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbStorage.dart';
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
-
-const thingsBoardApiEndpoint = 'https://thingsboard.cloud';
 
 class ThingsBoardService {
-  var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
-  TbSecureStorage tbSecureStorage = TbSecureStorage();
-  bool _isLoggedIn = false;
+  static TbSecureStorage tbSecureStorage = TbSecureStorage();
 
   ThingsBoardService();
 
-  Future<void> initialize() async {
-    await _login();  // Aguarda o login ser concluído
-  }
-
-  Future<void> _login() async {
-    await tbClient.login(LoginRequest('smartenergy520@gmail.com', 'smartenergy2024'));
-    _isLoggedIn = true;
-  }
-
-  Future<bool> isLoggedIn() async {
-    return _isLoggedIn;
-  }
-
-  String? getToken() {
-    return tbClient.getJwtToken();
-  }
-
-  Future<void> renewTokenIfNeeded() async {
-    if (!tbClient.isJwtTokenValid()) {
-        // Se o token de acesso estiver expirado, renovamos usando o refresh token
-        await tbClient.refreshJwtToken();
-        Config.token = getToken()!;
-        
-    }
-    
-}
-  String getIdTenant() {
-    return tbClient.getAuthUser()!.tenantId;
-  }
-
-  void editarDevice(String nome, String id_device, String descricao, String serial, String data) async {
-    await renewTokenIfNeeded();
-    String url = 'https://thingsboard.cloud:443/api/device';
+  void editarDevice(String nome, String id_device, String descricao,
+      String serial, String data) async {
+    String url = '${Config.apiUrl}/device';
     String token = Config.token;
-    String tenantId = tbClient.getAuthUser()!.tenantId;
     String? customer_id = CustomerInfo.idCustomer;
 
     Map<String, String> headers = {
@@ -59,9 +23,7 @@ class ThingsBoardService {
 
     Map<String, dynamic> body = {
       "id": {"id": id_device, "entityType": "DEVICE"},
-      "tenantId": {"id": tenantId, "entityType": "TENANT"},
       "customerId": {"id": customer_id, "entityType": "CUSTOMER"},
-      "ownerId": {"id": customer_id, "entityType": "CUSTOMER"},
       "name": nome,
       "type": "default",
       "label": "SmartEnergy",
@@ -78,57 +40,53 @@ class ThingsBoardService {
 
     String jsonBody = jsonEncode(body);
 
-    http.Response response = await http.post(Uri.parse(url), headers: headers, body: jsonBody);
+    http.Response response =
+        await http.post(Uri.parse(url), headers: headers, body: jsonBody);
 
     print('Response status: ${response.statusCode}');
     print('Response body: ${response.body}');
   }
 
-  Future<bool> verificar_serialKey(String serial) async {
-    await renewTokenIfNeeded();
-    final String url = '${Config.apiUrl}/user/devices?pageSize=1000&page=0';
+  Future<void> deleteDevice(String id) async {
+    final String url = '${Config.apiUrl}/device/$id';
     final Map<String, String> headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer ${Config.token}'
     };
     final uri = Uri.parse(url);
-    final response = await http.get(uri, headers: headers);
+    final response = await http.delete(uri, headers: headers);
 
     if (response.statusCode == 200) {
-      print('Requisição bem-sucedida!');
-      final data = json.decode(response.body);
-      final devices = data['data'];
-
-      // Verifica se a lista de dispositivos está vazia
-      if (devices.isEmpty) {
-        return false;
-      }
-
-      for (var device in devices) {
-        if (device.containsKey('additionalInfo') &&
-            device['additionalInfo'] is Map &&
-            device['additionalInfo'].containsKey('serialKey')) {
-          final serialKey = device['additionalInfo']['serialKey'];
-          print("Serial Key: $serialKey, Serial: $serial");
-
-          if (serialKey.trim() == serial.trim()) {
-            return true;
-          }
-        }
-      }
-      return false; // Retorna false se não encontrar o serialKey
+      print('Deletado com sucesso');
     } else {
-      print(
-          'Erro ao fazer a solicitação. Código de status: ${response.statusCode}');
-      return false; // Retorna false em caso de erro
+      print("erro ao deletar");
     }
   }
 
-  Future<String> cadastrarDevice(String nome, String descricao, String serial_key, String data) async {
-    await renewTokenIfNeeded();
-    final url = Uri.parse('https://thingsboard.cloud/api/device-with-credentials');
+  Future<void> unassigndevice(String deviceId) async {
+    final url = Uri.parse('${Config.apiUrl}/customer/device/$deviceId');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'accept': 'application/json',
+        'X-Authorization': 'Bearer ${Config.token}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Dispositivo removido com sucesso!');
+    } else {
+      print('Falha ao remover dispositivo: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
+  }
+
+  Future<String> cadastrarDevice(
+      String nome, String descricao, String serial_key, String data) async {
+    final url = Uri.parse('${Config.apiUrl}/device-with-credentials');
     String token = Config.token;
-    String tenantId = tbClient.getAuthUser()!.tenantId;
+    String tenantId = Config.tenantId;
     String? customer_id = CustomerInfo.idCustomer;
     final headers = {
       'accept': 'application/json',
@@ -138,11 +96,7 @@ class ThingsBoardService {
     final body = jsonEncode({
       "device": {
         "tenantId": {"id": tenantId, "entityType": "TENANT"},
-        "customerId": {
-          "id": customer_id,
-          "entityType": "CUSTOMER"
-        },
-        "ownerId": {"id": customer_id, "entityType": "CUSTOMER"},
+        "customerId": {"id": customer_id, "entityType": "CUSTOMER"},
         "name": nome,
         "type": "default",
         "label": "SmartEnergy",
@@ -185,4 +139,38 @@ class ThingsBoardService {
     }
     return "erro";
   }
+
+  Future<String?> existeDevice(String serialKey) async {
+  final url = Uri.parse('${Config.apiUrl}/tenant/devices?pageSize=1000&page=0');
+  final headers = {
+    'accept': 'application/json',
+    'X-Authorization': 'Bearer ${Config.token}',
+  };
+
+  try {
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+
+      // Verifica se data['data'] é null
+      if (data['data'] == null) {
+        print('existe device: Nenhum dispositivo encontrado.');
+        return null;
+      }
+
+      for (var device in data['data']) {
+        if (device['additionalInfo']['serialKey'].contains(serialKey)) {
+          return device['id']['id'];
+        }
+      }
+    } else {
+      print('existe device: Erro na requisição. Código de status: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('existe device: Erro ao realizar a requisição: $e');
+  }
+
+  return null; // Retorna null se não encontrar o dispositivo
+}
 }

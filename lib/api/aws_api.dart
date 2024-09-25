@@ -11,11 +11,11 @@ Future<void> salvar_telefones_aws(String key, String telefones) async {
 
   // Verifique o status da resposta
   if (response.statusCode == 200) {
-    print('Requisição bem-sucedida');
+    print('salvar telefones: Requisição bem-sucedida');
     // A resposta pode ser acessada por response.body
     print(response.body);
   } else {
-    print('Falha na requisição: ${response.statusCode}');
-    print('Detalhes do erro: ${response.body}');
+    print('salvar telefones:Falha na requisição: ${response.statusCode}');
+    print('salvar telefones:Detalhes do erro: ${response.body}');
   }
 }

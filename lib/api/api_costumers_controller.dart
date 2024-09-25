@@ -1,41 +1,34 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:smartenergy_app/api/api_cfg.dart';
-import 'package:smartenergy_app/services/Customer_info.dart';
 
 Future<int> criarCustomer(
     {required String login,
     required String senha,
     required String email,
     required String telefone,
-    required String cep,
-    required String estado,
+    required String cpf,
+    required String nome,
     required String cidade,
     required String endereco,
     required String complemento,
-    required String id_owner}) async {
+    }) async {
   final url = Uri.parse('${Config.apiUrl}/customer');
-
+  String tenantId = Config.tenantId;
   final headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json',
     'X-Authorization': 'Bearer ${Config.token}',
   };
-
-  
-
   final body = json.encode({
     "title": login.toLowerCase(),
-    "tenantId": {"id": id_owner, "entityType": "TENANT"},
-    "parentCustomerId": {"id": id_owner, "entityType": "CUSTOMER"},
-    "customerId": {"id": id_owner, "entityType": "CUSTOMER"},
-    "ownerId": id_owner,
+    "tenantId": {"id": tenantId, "entityType": "TENANT"},
     "country": "BR",
-    "state": estado,
+    "state": nome,
     "city": cidade,
     "address": endereco,
     "address2": complemento,
-    "zip": cep,
+    "zip": cpf,
     "phone": "+55" + telefone.replaceAll(RegExp(r'[()\-\s]'), ''),
     "email": email.toLowerCase(),
     "additionalInfo": {
@@ -170,6 +163,21 @@ Future<bool> verificarEmail(String email) async {
 
     // Verifica se o email já existe;
     if (emaill == email.toLowerCase()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Future<bool> verificarcpf(String cpf) async {
+  dynamic jsonData = await getAllCustomers();
+  final data = jsonData['data'];
+
+  for (var customer in data) {
+    final cpff = customer['zip'];
+
+    // Verifica se o email já existe;
+    if (cpf == cpff) {
       return true;
     }
   }

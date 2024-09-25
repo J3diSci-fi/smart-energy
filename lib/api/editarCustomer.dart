@@ -5,11 +5,11 @@ import 'package:smartenergy_app/api/api_costumers_controller.dart';
 import 'package:smartenergy_app/api/aws_api.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 
-Future<bool> adicionarTelefone1(String telefone1, String id_owner,
+Future<bool> adicionarTelefone1(String telefone1,
     String verificar, List<Map<String, String>> deviceList) async {
-  String url = 'https://thingsboard.cloud:443/api/customer';
+  String url = '${Config.apiUrl}/customer';
   String token = Config.token;
-  String tenantId = id_owner;
+  String tenantId = Config.tenantId;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -50,9 +50,6 @@ Future<bool> adicionarTelefone1(String telefone1, String id_owner,
     "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
     "tenantId": {"id": tenantId, "entityType": "TENANT"},
-    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
     "city": cidade,
@@ -98,11 +95,11 @@ Future<bool> adicionarTelefone1(String telefone1, String id_owner,
   return true;
 }
 
-Future<bool> adicionarTelefone2(String telefone2, String id_owner,String verificar, List<Map<String, String>> deviceList) async {
-  String url = 'https://thingsboard.cloud:443/api/customer';
+Future<bool> adicionarTelefone2(String telefone2,String verificar, List<Map<String, String>> deviceList) async {
+  String url = '${Config.apiUrl}/customer';
   String token = Config.token;
-  //var tbClient;
-  String tenantId = id_owner;
+
+  String tenantId = Config.tenantId;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -144,9 +141,6 @@ Future<bool> adicionarTelefone2(String telefone2, String id_owner,String verific
     "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
     "tenantId": {"id": tenantId, "entityType": "TENANT"},
-    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
     "city": cidade,
@@ -192,7 +186,7 @@ Future<bool> adicionarTelefone2(String telefone2, String id_owner,String verific
 Future<dynamic> getCustomer() async {
   // URL da API e token de autorização
   String? customer_id = CustomerInfo.idCustomer;
-  String url = 'https://thingsboard.cloud/api/customer/$customer_id';
+  String url = '${Config.apiUrl}/customer/$customer_id';
 
   String token = Config.token;
   // Cabeçalhos da requisição
@@ -214,11 +208,11 @@ Future<dynamic> getCustomer() async {
   }
 }
 
-Future<bool> editarTelefonePrincipa(String telefone3, String id_owner, List<Map<String, String>> deviceList) async {
-  String url = 'https://thingsboard.cloud:443/api/customer';
+Future<bool> editarTelefonePrincipa(String telefone3, List<Map<String, String>> deviceList) async {
+  String url = '${Config.apiUrl}/customer';
   String token = Config.token;
-  //var tbClient;
-  String tenantId = id_owner;
+
+  String tenantId = Config.tenantId;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -255,9 +249,6 @@ Future<bool> editarTelefonePrincipa(String telefone3, String id_owner, List<Map<
     "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
     "tenantId": {"id": tenantId, "entityType": "TENANT"},
-    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
     "city": cidade,
@@ -292,11 +283,11 @@ Future<bool> editarTelefonePrincipa(String telefone3, String id_owner, List<Map<
   return true;
 }
 
-Future<bool> editarEmail(String email2, String id_owner) async {
-  String url = 'https://thingsboard.cloud:443/api/customer';
+Future<bool> editarEmail(String email2) async {
+  String url = '${Config.apiUrl}/customer';
   String token = Config.token;
 
-  String tenantId = id_owner;
+  String tenantId = Config.tenantId;
   String? customer_id = CustomerInfo.idCustomer;
   late String login;
   late String senha;
@@ -338,9 +329,6 @@ Future<bool> editarEmail(String email2, String id_owner) async {
     "id": {"id": customer_id, "entityType": "CUSTOMER"},
     "title": login,
     "tenantId": {"id": tenantId, "entityType": "TENANT"},
-    "parentCustomerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "customerId": {"id": tenantId, "entityType": "CUSTOMER"},
-    "ownerId": tenantId,
     "country": "BR",
     "state": estado,
     "city": cidade,

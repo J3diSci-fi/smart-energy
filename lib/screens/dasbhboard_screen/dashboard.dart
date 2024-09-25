@@ -10,13 +10,13 @@ import 'package:smartenergy_app/api/get_serial_aws.dart';
 import 'package:smartenergy_app/api/editarCustomer.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
 import 'package:smartenergy_app/api/post_serial_aws.dart';
+import 'package:smartenergy_app/api/utils.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:badges/badges.dart' as badges;
 import 'package:web_socket_channel/io.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -25,7 +25,8 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final channel = IOWebSocketChannel.connect('ws://thingsboard.cloud/api/ws');
+  final channel = IOWebSocketChannel.connect(
+      'ws://backend.smartenergy.smartrural.com.br/api/ws');
 
   List<Map<String, String>> _deviceList = [];
   GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
@@ -34,30 +35,30 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    if (CustomerInfo.idCustomer == null || Config.token.isEmpty) {
-      loadCustomerInfo();
-    } else {
-      adicionarDeviceLista();
-    }
+    initialize();
   }
 
-  void loadCustomerInfo() async {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context, listen: false);
-    String? token = thingsBoardService.getToken();
-    String? idCustomer =  await thingsBoardService.tbSecureStorage.getItem("id_customer");
-
-    if (idCustomer != null && token != null) {
-      CustomerInfo.idCustomer = idCustomer;
-      Config.token = token;
-      adicionarDeviceLista();
+  void initialize() async {
+    await loadCustomerInfo();
+    if (CustomerInfo.idCustomer != null) {
+        adicionarDeviceLista();   
     } else {
-      print("id_Customr $idCustomer, token: $token");
+      print("idCustomer é nulo após o carregamento");
+      //se for nullo eu limpo tudo e vou para a tela de login
     }
+    alarme_status();
+  }
+
+  Future<void> loadCustomerInfo() async {
+    String? idCustomer =
+        await ThingsBoardService.tbSecureStorage.getItem("id_customer");
+    CustomerInfo.idCustomer = idCustomer;
   }
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
+    ThingsBoardService thingsBoardService =
+        Provider.of<ThingsBoardService>(context);
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
 
     return WillPopScope(
@@ -114,21 +115,20 @@ class _DashboardPageState extends State<DashboardPage> {
               // updateNotificationCount();
             }
             if (index == 2) {
-              thingsBoardService.tbSecureStorage.deleteItem("login");
-              thingsBoardService.tbSecureStorage.deleteItem("senha");
-              thingsBoardService.tbSecureStorage.deleteItem("id_customer");
-              thingsBoardService.tbSecureStorage.deleteItem("telefone");
-              thingsBoardService.tbSecureStorage.deleteItem("telefone1");
-              thingsBoardService.tbSecureStorage.deleteItem("telefone2");
-              thingsBoardService.tbSecureStorage.deleteItem("email");
-              thingsBoardService.tbSecureStorage.deleteItem("nome");
-              firebaseApi.unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
+              ThingsBoardService.tbSecureStorage.deleteItem("login");
+              ThingsBoardService.tbSecureStorage.deleteItem("senha");
+              ThingsBoardService.tbSecureStorage.deleteItem("id_customer");
+              firebaseApi
+                  .unsubscribeFromTopic(CustomerInfo.idCustomer.toString());
               channel.sink.close();
               // Sair para a tela de login
-              Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => Login2()),
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Login2()),
               );
             } else if (index == 1) {
               // Ir para a tela de configurações
+
               Navigator.pushNamed(context, '/configs').then((result) {
                 if (result != null && result is bool && result) {
                   _bottomNavigationKey.currentState
@@ -137,7 +137,7 @@ class _DashboardPageState extends State<DashboardPage> {
               });
             } else if (index == 3) {
               //resetNotificationCount();
-              await thingsBoardService.renewTokenIfNeeded();
+
               Navigator.pushNamed(context, '/notificacoes').then((result) {
                 if (result != null && result is bool && result) {
                   _bottomNavigationKey.currentState
@@ -286,12 +286,16 @@ class _DashboardPageState extends State<DashboardPage> {
     channel.stream.listen((message) {
       var jsonResponse = jsonDecode(message);
       var subscriptionId = jsonResponse['subscriptionId'];
-
       String serial = subscriptionId.toString();
 
       // Iterar sobre a lista de dispositivos para encontrar o dispositivo correspondente
       for (var device in _deviceList) {
         var deviceSerial = device['serial'];
+        deviceSerial =  formatSerialKey(deviceSerial!); //tirei os hifens
+        deviceSerial =  getFromEighthDigit(deviceSerial); //peguei os 8 digitos
+        deviceSerial = deviceSerial..replaceAll('0', 'C');
+        deviceSerial =  convertLettersToNumbers(deviceSerial); // converti em numeros
+        
         if (deviceSerial == serial) {
           var data = jsonResponse['data'];
           if (data != null && data.containsKey('energia')) {
@@ -319,20 +323,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _deleteDevice(
       Map<String, String> device, ThingsBoardService thingsBoardService) async {
-    await thingsBoardService.renewTokenIfNeeded();
     await atualizar_status_serial(device['serial']!, "false");
     await salvar_telefones_aws(device['serial']!, "");
     setState(() {
       _deviceList.remove(device);
     });
-
-    thingsBoardService.tbClient.getDeviceService().deleteDevice(device['id']!);
+    await thingsBoardService.unassigndevice(device['id']!);
+    // await thingsBoardService.deleteDevice(device['id']!);
   }
 
   String _formatDate(DateTime date) {
     // Método para formatar a data
     return DateFormat('dd-MM-yyyy').format(date);
   }
+
 
   void _showAddDeviceDialogEdit(BuildContext context,
       ThingsBoardService thingsBoardService, Map<String, String> device) {
@@ -428,91 +432,112 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _showAddDeviceDialog(
-      BuildContext context, ThingsBoardService thingsBoardService) {
-    String _newDeviceName =
-        ''; // Variável para armazenar o nome do novo dispositivo
-    String _newDeviceDescription =
-        ''; // Variável para armazenar a descrição do novo dispositivo
-    String _newDeviceSerial =
-        ''; // Variável para armazenar o Serial Key do novo dispositivo
+    BuildContext context, ThingsBoardService thingsBoardService) {
+  String _newDeviceName = '';
+  String _newDeviceDescription = '';
+  String _newDeviceSerial = '';
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Adicionar Dispositivo"),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  onChanged: (value) {
-                    _newDeviceName =
-                        value; // Atualizar o nome do dispositivo conforme o usuário digita
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Nome do Dispositivo',
-                  ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Adicionar Dispositivo"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                onChanged: (value) {
+                  _newDeviceName = value;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Nome do Dispositivo',
                 ),
-                SizedBox(height: 10),
-                TextField(
-                  onChanged: (value) {
-                    _newDeviceDescription =
-                        value; // Atualizar a descrição do dispositivo conforme o usuário digita
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Descrição',
-                  ),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                onChanged: (value) {
+                  _newDeviceDescription = value;
+                },
+                decoration: InputDecoration(
+                  labelText: 'Descrição',
                 ),
-                SizedBox(height: 10),
-                TextField(
-                  onChanged: (value) {
-                    _newDeviceSerial =
-                        value; // Atualizar o Serial Key do dispositivo conforme o usuário digita
-                  },
-                  keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
-                  decoration: InputDecoration(
-                    labelText: 'Serial Key',
-                  ),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                onChanged: (value) {
+                  _newDeviceSerial = value;
+                },
+                keyboardType: TextInputType.text,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  SerialKeyFormatter(),
+                ],
+                decoration: InputDecoration(
+                  labelText: 'Serial Key',
+                  hintText: 'xxxx-xxxx-xxxx',
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (_newDeviceName.isNotEmpty &&
-                    _newDeviceDescription.isNotEmpty &&
-                    _newDeviceSerial.isNotEmpty) {
-                  String deviceNameWithSerial =
-                      '$_newDeviceName - $_newDeviceSerial';
-                  String data = _formatDate(DateTime.now());
-                  //bool valorr = await thingsBoardService.verificar_serialKey(_newDeviceSerial.toLowerCase());
-                  var result = await fetchData("$_newDeviceSerial");
-                  if (result.isNotEmpty) {
-                    if (result['message'] == "existe") {
-                      if (result['status'] == "false") {
-                        await atualizar_status_serial(_newDeviceSerial, "true");
-                        dynamic customer = await getCustomer();
-                        var telefone = customer["phone"];
-                        var telefone1 = customer['additionalInfo']['telefone1'];
-                        var telefone2 = customer['additionalInfo']['telefone2'];
-                        String telefones = '$telefone,$telefone1,$telefone2';
-                        salvar_telefones_aws(_newDeviceSerial, telefones);
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () async {
+              if (_newDeviceName.isNotEmpty &&
+                  _newDeviceDescription.isNotEmpty &&
+                  _newDeviceSerial.isNotEmpty) {
+
+                String deviceNameWithSerial = '$_newDeviceName - $_newDeviceSerial';
+                String data = _formatDate(DateTime.now());
+                _newDeviceSerial = _newDeviceSerial.toUpperCase(); //colocando em caixa alta
+      
+                var result = await fetchData("$_newDeviceSerial");
+                if (result.isNotEmpty) {
+                  if (result['message'] == "existe") {
+                    if (result['status'] == "false") {
+                      await atualizar_status_serial(_newDeviceSerial, "true");
+
+                      dynamic customer = await getCustomer();
+                      var telefone = customer["phone"];
+                      var telefone1 = customer['additionalInfo']['telefone1'];
+                      var telefone2 = customer['additionalInfo']['telefone2'];
+                      String telefones = '$telefone,$telefone1,$telefone2';
+                      salvar_telefones_aws(_newDeviceSerial, telefones);
+
+                      String? deviceId = await thingsBoardService.existeDevice(_newDeviceSerial);
+                      if (deviceId != null) {
+                        thingsBoardService.editarDevice(
+                            deviceNameWithSerial,
+                            deviceId,
+                            _newDeviceDescription,
+                            _newDeviceSerial,
+                            data);
+                        setState(() {
+                          _deviceList.add({
+                            'name': _newDeviceName,
+                            'description': _newDeviceDescription,
+                            'serial': _newDeviceSerial,
+                            'id': deviceId,
+                            'data': data,
+                            'color': "verde",
+                          });
+                        });
+                        //Aqui eu transformo tudo em número para subscrever no callback (cmdid) e tiro os hifens
+                        subscribeDivece(deviceId, _newDeviceSerial);
+                        Navigator.of(context).pop();
+                      } else {
                         String deviceId =
                             await thingsBoardService.cadastrarDevice(
                                 deviceNameWithSerial,
                                 _newDeviceDescription,
-                                _newDeviceSerial.toLowerCase(),
+                                _newDeviceSerial,
                                 data);
                         setState(() {
                           _deviceList.add({
@@ -524,35 +549,37 @@ class _DashboardPageState extends State<DashboardPage> {
                             'color': "verde",
                           });
                         });
-
+                        //Aqui eu transformo tudo em número para subscrever no callback (cmdid) e tiro os hifens
                         subscribeDivece(deviceId, _newDeviceSerial);
                         Navigator.of(context).pop();
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text("Aviso"),
-                              content: Text( "O código serial do dispositivo informado já está em uso!"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("OK"),
-                                ),
-                              ],
-                            );
-                          },
-                        );
                       }
+                    } else if (result['status'] == "null") {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text("Aviso"),
+                            content: Text(
+                                "Realize o pagamento do dispositivo para continuar utilizando nossos serviços!"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("OK"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     } else {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: Text("Aviso"),
-                            content: Text("Código de serial inválido!"),
+                            content: Text(
+                                "O código serial do dispositivo informado já está em uso!"),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -571,8 +598,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text("Aviso"),
-                          content: Text(
-                              "Aconteceu um problema inesperado. Tente novamente mais tarde!"),
+                          content: Text("Código de serial inválido!"),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -591,7 +617,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: Text("Aviso"),
-                        content: Text("Por favor, preencha todos os campos!"),
+                        content: Text(
+                            "Aconteceu um problema inesperado. Tente novamente mais tarde!"),
                         actions: [
                           TextButton(
                             onPressed: () {
@@ -604,18 +631,42 @@ class _DashboardPageState extends State<DashboardPage> {
                     },
                   );
                 }
-              },
-              child: Text("Adicionar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Aviso"),
+                      content: Text("Por favor, preencha todos os campos!"),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("OK"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            child: Text("Adicionar"),
+          ),
+        ],
+      );
+    },
+  );
+}
   void adicionarwebsocket() {
     for (var device in _deviceList) {
       var serial = device['serial'];
+      //aqui eu tiro os hifens e transformo em números
+      String serial2 = formatSerialKey(serial!); //tirei os hifens
+      serial2 = getFromEighthDigit(serial2); // peguei 8 digitos
+      serial2 = serial2..replaceAll('0', 'C');
+      serial2 = convertLettersToNumbers(serial2); //converti em numero
+
       var id = device['id'];
       channel.sink.add(jsonEncode({
         "authCmd": {
@@ -627,7 +678,7 @@ class _DashboardPageState extends State<DashboardPage> {
             "entityType": "DEVICE",
             "entityId": id,
             "scope": "LATEST_TELEMETRY",
-            "cmdId": serial,
+            "cmdId": serial2,
             "type": "TIMESERIES",
           }
         ]
@@ -636,13 +687,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void adicionarDeviceLista() async {
-    ThingsBoardService thingsBoardService =
-        Provider.of<ThingsBoardService>(context, listen: false);
-    await thingsBoardService.renewTokenIfNeeded();
     String? id_customer = CustomerInfo.idCustomer;
     String token = Config.token;
     var url = Uri.parse(
-        'https://thingsboard.cloud:443/api/customer/$id_customer/devices?pageSize=100&page=0');
+        '${Config.apiUrl}/customer/$id_customer/devices?pageSize=100&page=0');
     var headers = {
       'accept': 'application/json',
       'X-Authorization': 'Bearer $token',
@@ -670,14 +718,35 @@ class _DashboardPageState extends State<DashboardPage> {
         });
       }
       adicionarwebsocket();
-      subscribeDivece("301", "0000010111011");
+      subscribeDivece("301", "1011101");
       leitura();
     } else {
       print('Request failed with status: ${response.statusCode}');
+      ThingsBoardService.tbSecureStorage.deleteItem("login");
+      ThingsBoardService.tbSecureStorage.deleteItem("senha");
+      ThingsBoardService.tbSecureStorage.deleteItem("id_customer");
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => Login2()),);
+      print(response.body);
+      print(response.statusCode);
+      print(response.request);
+    }
+  }
+
+  void alarme_status() async {
+    String? status = await ThingsBoardService.tbSecureStorage.getItem("status");
+    if (status == null) {
+      print("O status é nullo");
+      await ThingsBoardService.tbSecureStorage.setItem("status", "true");
+    } else {
+      print("O status atual é {$status}");
     }
   }
 
   void subscribeDivece(String id, String serial) {
+    String serial2 = formatSerialKey(serial); //tirei os hifens
+    serial2 = getFromEighthDigit(serial2); // peguei 8 digitos
+    serial2 = serial2..replaceAll('0', 'C');
+    serial2 = convertLettersToNumbers(serial2);
     channel.sink.add(jsonEncode({
       "authCmd": {
         "cmdId": 0,
@@ -688,10 +757,40 @@ class _DashboardPageState extends State<DashboardPage> {
           "entityType": "DEVICE",
           "entityId": id,
           "scope": "LATEST_TELEMETRY",
-          "cmdId": serial,
+          "cmdId": serial2,
           "type": "TIMESERIES",
         }
       ]
     }));
+  }
+}
+class SerialKeyFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String oldText = oldValue.text.replaceAll('-', '');
+    String newText = newValue.text.replaceAll('-', '');
+
+    // Verifica se o texto está sendo apagado
+    if (newValue.text.length < oldValue.text.length) {
+      // Se o texto está sendo apagado e o último caractere era um hífen, remova também o hífen
+      if (oldText.length % 4 == 0 && newText.length > 0) {
+        newText = newText.substring(0, newText.length - 1);
+      }
+    }
+
+    // Reaplica a formatação com hífens
+    String formattedText = '';
+    for (int i = 0; i < newText.length; i++) {
+      formattedText += newText[i];
+      if ((i + 1) % 4 == 0 && i + 1 != newText.length) {
+        formattedText += '-';
+      }
+    }
+
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
+    );
   }
 }

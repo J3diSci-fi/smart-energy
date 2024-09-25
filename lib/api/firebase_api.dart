@@ -1,11 +1,17 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:smartenergy_app/logic/core/appcore.dart';
 import 'package:smartenergy_app/services/notification_service.dart';
+import 'package:smartenergy_app/services/tbclient_service.dart';
 
 
 @pragma('vm:entry-point')
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  AppCore.soundManager.play();
+  
+  String? status = await ThingsBoardService.tbSecureStorage.getItem("status");
+  if(status == "true"){
+    AppCore.soundManager.play();
+  }
+  
   
 }
 
@@ -13,6 +19,7 @@ class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
 
   final NotificationService notificationService = NotificationService();
+ 
 
   Future<void> initNotifications() async {
     await _firebaseMessaging.requestPermission();
@@ -36,6 +43,7 @@ class FirebaseApi {
   }
 
   Future initPushNotifications(String token) async {
+    
     FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message){
       handleMessage(message);
@@ -43,13 +51,17 @@ class FirebaseApi {
 
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      String? status = await ThingsBoardService.tbSecureStorage.getItem("status");
       final notification = message.notification;
       if(notification != null){
         final notificationTitle = notification!.title;
         final notificationBody = notification.body;
         notificationService.showNotification(title: notificationTitle, body: notificationBody);
-        AppCore.soundManager.play();
+        if(status == "true"){
+           AppCore.soundManager.play();
+        }
+        
       }
       else{
         print("Notificação nulla");

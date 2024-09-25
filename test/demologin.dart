@@ -1,11 +1,11 @@
 
-import 'package:thingsboard_pe_client/thingsboard_client.dart';
-
+//import 'package:thingsboard_pe_client/thingsboard_client.dart';
+import 'package:thingsboard_client/thingsboard_client.dart';
 main() async {
     try {
-      final thingsBoardApiEndpoint = 'https://thingsboard.cloud';
+      final thingsBoardApiEndpoint = 'https://backend.smartenergy.smartrural.com.br';
       var tbClient = ThingsboardClient(thingsBoardApiEndpoint);
-      await tbClient.login(LoginRequest('smartenergy520@gmail.com', 'smartenergy2024'));
+      await tbClient.login(LoginRequest('tenant@thingsboard.org', 'dSyHKH3rsxnzUm^gR@1o'));
 
       print('isAuthenticated=${tbClient.isAuthenticated()}');
 

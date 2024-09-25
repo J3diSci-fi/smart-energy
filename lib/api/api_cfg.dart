@@ -1,4 +1,5 @@
 class Config {
-  static  String token = ""; // apartir do momento que meu app vai pra tela de login o token já é setado
-  static const String apiUrl = 'https://thingsboard.cloud:443/api';
+  static  String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZW5hbnRAdGhpbmdzYm9hcmQub3JnIiwidXNlcklkIjoiZjhjYzQ0ZDAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3Iiwic2NvcGVzIjpbIlRFTkFOVF9BRE1JTiJdLCJzZXNzaW9uSWQiOiJjNTNhOGI5OS0zZDBhLTQ5M2EtOWJmMS0yNjA3MDJiNzQwOTEiLCJleHAiOjI3OTM3ODAxOTUsImlzcyI6InRoaW5nc2JvYXJkLmlvIiwiaWF0IjoxNzIwMDM4MzcyLCJlbmFibGVkIjp0cnVlLCJpc1B1YmxpYyI6ZmFsc2UsInRlbmFudElkIjoiYzdkYjQ2ZjAtMzk3OC0xMWVmLWIzYWYtNmQ3ZTc3ZTNkYTM3IiwiY3VzdG9tZXJJZCI6IjEzODE0MDAwLTFkZDItMTFiMi04MDgwLTgwODA4MDgwODA4MCJ9.Yw8VwsHc6w5PDX6NcxKZwAf_Un112fC_YdVrAyJSLov0C_8LVtpVy5vG3-vRk4xo1Y997yDjyc2LRYAQL0pzsA"; // apartir do momento que meu app vai pra tela de login o token já é setado
+  static const String apiUrl = 'http://backend.smartenergy.smartrural.com.br/api';
+  static const String tenantId = "c7db46f0-3978-11ef-b3af-6d7e77e3da37";
 }

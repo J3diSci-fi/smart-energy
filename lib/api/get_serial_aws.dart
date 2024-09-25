@@ -10,14 +10,14 @@ Future<Map<String, dynamic>> fetchData(String serial) async {
 
   if (response.statusCode == 200) {
     var data = json.decode(response.body);
-    print("Requisição bem-sucedida!");
-    print("Resposta: $data");
+    print("fetch Requisição bem-sucedida!");
+    print("fetch Resposta: $data");
 
     var bodyData = json.decode(data['body']);
     return bodyData;
     
   } else {
-    print("Erro na requisição: ${response.body}");
+    print("fetch Erro na requisição: ${response.body}");
     return {};
   }
 }

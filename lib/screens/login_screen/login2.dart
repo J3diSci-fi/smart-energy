@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/api_costumers_controller.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
 import 'package:smartenergy_app/screens/login_screen/cadastro2.dart';
@@ -20,8 +19,6 @@ class _Login2State extends State<Login2> {
 
   @override
   Widget build(BuildContext context) {
-    ThingsBoardService thingsBoardService = Provider.of<ThingsBoardService>(context);
-    Config.token = thingsBoardService.getToken()!;
     FirebaseApi firebaseApi = Provider.of<FirebaseApi>(context);
     return WillPopScope(
       onWillPop: () async {
@@ -152,27 +149,17 @@ class _Login2State extends State<Login2> {
                         child: InkWell(
                           onTap: () async {
                             if (_usernameController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-                              await thingsBoardService.renewTokenIfNeeded();
                               dynamic customer = await verifyLoginAndPassword(
                                 _usernameController.text,
                                 _passwordController.text,
                               );
                               if (customer != null) {
                                 var user = customer['id']['id'];
-                                var telefone = customer['phone'];
-                                var email = customer['email'];
-                                var nome = customer['title'];
-                                var telefone1 = customer['additionalInfo']['telefone1'];
-                                var telefone2 = customer['additionalInfo']['telefone2'];
                                 CustomerInfo.idCustomer = user;
-                                thingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
-                                thingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
-                                thingsBoardService.tbSecureStorage.setItem("id_customer", user);
-                                thingsBoardService.tbSecureStorage.setItem("telefone", telefone);
-                                thingsBoardService.tbSecureStorage.setItem("telefone1", telefone1);
-                                thingsBoardService.tbSecureStorage.setItem("telefone2", telefone2);
-                                thingsBoardService.tbSecureStorage.setItem("email", email);
-                                thingsBoardService.tbSecureStorage.setItem("nome", nome);
+                                ThingsBoardService.tbSecureStorage.setItem("login", _usernameController.text);
+                                ThingsBoardService.tbSecureStorage.setItem("senha", _passwordController.text);
+                                ThingsBoardService.tbSecureStorage.setItem("id_customer", user);
+                                
                                 firebaseApi.subscribeCustomerIdTopic(user);
                                 Navigator.pushNamed(context, '/profile');
                               } else {
