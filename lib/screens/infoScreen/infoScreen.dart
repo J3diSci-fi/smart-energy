@@ -6,6 +6,7 @@ import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/send_attributes.dart';
 import 'package:smartenergy_app/api/utils.dart';
 import 'package:smartenergy_app/screens/infoScreen/alarmeDeviceScreen.dart';
+import 'package:smartenergy_app/screens/infoScreen/relatorioscreen.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
 import 'package:web_socket_channel/io.dart';
 import 'dart:convert';
@@ -257,6 +258,7 @@ class _InfoScreenState extends State<InfoScreen> {
                                 icon: 'assets/images/saldo.png',
                                 title: saldo,
                               ),
+                              
                               _cardMenu(
                                 onTap: () {
                                   //Navigator.pushNamed(context, '/notificacoes');
@@ -273,6 +275,31 @@ class _InfoScreenState extends State<InfoScreen> {
                                 text: "Histórico",
                                 icon: 'assets/images/documento (2).png',
                                 title: 'Notificações',
+
+                                //color: Colors.indigoAccent,
+                                //fontColor: Colors.white,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween, //eu mudo aqui igual o style 
+                            children: [
+                              //card do relatorio
+                              _cardMenu(
+                                onTap: () {
+                                  //Navigator.pushNamed(context, '/notificacoes');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RelatorioDevice(
+                                          device_id: widget.device['id']!),
+                                    ),
+                                  );
+                                },
+                                text: "Relatório",
+                                icon: 'assets/images/relatorio (1).png',
+                                title: 'Energia',
 
                                 //color: Colors.indigoAccent,
                                 //fontColor: Colors.white,
