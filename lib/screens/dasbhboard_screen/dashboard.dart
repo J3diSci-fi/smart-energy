@@ -1,23 +1,25 @@
+import 'dart:convert';
+
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:smartenergy_app/Widget/customerTopBar.dart';
 import 'package:smartenergy_app/api/api_cfg.dart';
 import 'package:smartenergy_app/api/aws_api.dart';
-import 'package:smartenergy_app/api/get_serial_aws.dart';
 import 'package:smartenergy_app/api/editarCustomer.dart';
 import 'package:smartenergy_app/api/firebase_api.dart';
+import 'package:smartenergy_app/api/get_serial_aws.dart';
 import 'package:smartenergy_app/api/post_serial_aws.dart';
 import 'package:smartenergy_app/api/utils.dart';
 import 'package:smartenergy_app/screens/infoScreen/infoScreen.dart';
 import 'package:smartenergy_app/screens/login_screen/login2.dart';
 import 'package:smartenergy_app/services/Customer_info.dart';
 import 'package:smartenergy_app/services/tbclient_service.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:web_socket_channel/io.dart';
+import 'package:smartenergy_app/api/api_costumers_controller.dart';
 
 class DashboardPage extends StatefulWidget {
   @override

@@ -154,6 +154,35 @@ Future<bool> sendEmail(String client_email, String login, String senha) async {
   }
 }
 
+Future<bool> sendEmailAlerta(String client_email, String mensagem) async {
+  final service_id = "service_h9kuzxt";
+  final templateId = "template_br24mn7";
+  final userId = "P9ZkyGOdmNuwxNjqR";
+  final url = Uri.parse("https://api.emailjs.com/api/v1.0/email/send");
+  final response = await http.post(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({
+      'service_id': service_id,
+      'template_id': templateId,
+      'user_id': userId,
+      'template_params': {
+        'user_email': client_email,
+        'client_email': client_email,
+        "message": "$mensagem",
+      }
+    }),
+  );
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
 Future<bool> verificarEmail(String email) async {
   dynamic jsonData = await getAllCustomers();
   final data = jsonData['data'];

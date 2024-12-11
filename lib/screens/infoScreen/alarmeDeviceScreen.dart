@@ -214,6 +214,7 @@ class _DeviceAlarmeState extends State<DeviceAlarme> {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       var alarms = jsonResponse['data'];
+      
       tz.initializeTimeZones();
       var localTimezone = tz.getLocation('America/Sao_Paulo');
       for (var alarm in alarms) {
